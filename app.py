@@ -1,11 +1,14 @@
-import os,json,random
+import os,json,random,hashlib
 from flask import Flask,request,redirect,session
+from datetime import datetime as dt
+
 app=Flask(__name__)
 app.secret_key="siea_final_profesional_completo"
 DB=os.path.expanduser("~/preg.json")
 HU=os.path.expanduser("~/hist.json")
 UU=os.path.expanduser("~/user.json")
 MM=os.path.expanduser("~/materias.json")
+ADMIN_DB=os.path.expanduser("~/admin.json")
 
 def ld():
  try:
@@ -36,9 +39,20 @@ def ld_m():
   if os.path.exists(MM):
    with open(MM) as f: return json.load(f)
  except: pass
- return ["HI","MOM","LEY ORGANICA"]
+ return {}
 def sv_m(d):
  with open(MM,"w") as f: json.dump(d,f)
+def ld_admin():
+ try:
+  if os.path.exists(ADMIN_DB):
+   with open(ADMIN_DB) as f: return json.load(f)
+ except: pass
+ return {}
+def sv_admin(d):
+ with open(ADMIN_DB,"w") as f: json.dump(d,f)
+
+def hash_password(p):
+ return hashlib.sha256(p.encode()).hexdigest()
 
 def login_page():
  h=""
@@ -52,13 +66,28 @@ def login_page():
  h+='.purpose{background:rgba(0,0,0,0.6);border-left:4px solid #FFD700;padding:12px;margin-top:14px;border-radius:0 10px 10px 0}'
  h+='.purpose b{color:#FFD700;font-size:10px;letter-spacing:1.2px;display:block;margin-bottom:4px}'
  h+='.purpose p{font-size:11px;line-height:1.6;color:#D2DCD2;margin:6px 0 0 0;text-align:justify}'
- h+='.card-login{margin:18px auto;width:90%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(0,255,128,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8)}'
+ h+='.container{display:flex;flex:1;gap:20px;padding:20px;flex-wrap:wrap;justify-content:center}'
+ h+='.card-login{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(0,255,128,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8)}'
+ h+='.card-support{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8);text-align:center}'
  h+='.lbl{font-size:9px;letter-spacing:1.5px;color:#00FF80;font-weight:700;margin:12px 0 4px 2px}'
  h+='.inp{width:100%;padding:13px;background:#020502;border:1.5px solid #1A401A;border-radius:10px;color:#fff;box-sizing:border-box;font-size:13px}'
  h+='.btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:900;letter-spacing:2px;margin-top:16px;background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;cursor:pointer}'
+ h+='.btn-register{background:linear-gradient(180deg,#FF9800,#E65100);margin-top:10px}'
+ h+='.btn-paypal{background:linear-gradient(180deg,#003087,#009cde);margin-top:10px;width:100%;padding:12px}'
+ h+='.tab-buttons{display:flex;gap:10px;margin-bottom:10px}'
+ h+='.tab-btn{flex:1;padding:10px;border:2px solid #00FF80;background:transparent;color:#00FF80;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px}'
+ h+='.tab-btn.active{background:#00FF80;color:#050905}'
+ h+='.tab-content{display:none}'
+ h+='.tab-content.active{display:block}'
  h+='.legal{font-size:7.5px;color:#8EA88E;line-height:1.5;text-align:justify;margin-top:18px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px}'
  h+='.legal b{color:#FFD700;font-size:7.5px}'
+ h+='.support-info{margin:15px 0;padding:12px;background:rgba(0,255,128,0.1);border-left:4px solid #00FF80;border-radius:8px}'
+ h+='.support-info b{color:#00FF80;display:block;margin-bottom:5px}'
+ h+='.support-info p{margin:5px 0;font-size:11px;color:#D2DCD2}'
+ h+='.support-tel{font-size:16px;font-weight:900;color:#FFD700;letter-spacing:2px;margin:10px 0}'
  h+='.foot{margin-top:auto;background:#020402;padding:12px;text-align:center;font-size:7px;color:#3A5A3A;border-top:1px solid #0D1A0D;letter-spacing:1px}'
+ h+='.error-msg{background:#260A0A;border:1px solid #5A1A1A;color:#FF8A80;padding:10px;border-radius:8px;margin-bottom:10px;font-size:11px}'
+ h+='.success-msg{background:#0A261A;border:1px solid #1A5A2A;color:#00FF80;padding:10px;border-radius:8px;margin-bottom:10px;font-size:11px}'
  h+='</style>'
  h+='<div class=hero>'
  h+='<div class=sigla>S.I.E.A.</div>'
@@ -67,16 +96,57 @@ def login_page():
  h+='<b>PROPOSITO Y FUNCION INSTITUCIONAL</b>'
  h+='<p>Plataforma de fortalecimiento academico e institucional disenada bajo estrictos estándares de calidad para optimizar la preparacion, evaluacion y profesionalizacion del personal en proceso de ascenso. Centraliza bancos de reactivos oficiales por materia, genera evaluaciones aleatorizadas de alta exigencia, audita el rendimiento y otorga metricas precisas de desempeno para garantizar la mejora continua y la excelencia operativa bajo normativas vigentes.</p>'
  h+='</div></div>'
+ h+='<div class=container>'
  h+='<div class=card-login>'
  h+='<div style=text-align:center><div style=font-weight:900;letter-spacing:2.5px;color:#00FF80;font-size:12px>ACCESO AUTORIZADO</div><div style=font-size:9px;color:#7EA97E;margin-top:3px;letter-spacing:1px>PERSONAL EN PREPARACION</div></div>'
+ h+='<div class=tab-buttons>'
+ h+='<button type=button class="tab-btn active" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'login-form\').classList.add(\'active\'); this.classList.add(\'active\'); this.parentElement.querySelector(\'.tab-btn:last-child\').classList.remove(\'active\')">🔓 INGRESAR</button>'
+ h+='<button type=button class="tab-btn" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'register-form\').classList.add(\'active\'); this.classList.add(\'active\'); this.parentElement.querySelector(\'.tab-btn:first-child\').classList.remove(\'active\')">📝 REGISTRARSE</button>'
+ h+='</div>'
+ h+='<div id=login-form class="tab-content active">'
  h+='<form method=post action=/login>'
  h+='<div class=lbl>USUARIO / MATRICULA</div><input class=inp name=user placeholder="Ej. 123456" required>'
  h+='<div class=lbl>CONTRASENA</div><input class=inp type=password name=pass placeholder="********" required>'
  h+='<button class=btn>INGRESAR AL SISTEMA</button>'
  h+='</form>'
+ h+='</div>'
+ h+='<div id=register-form class="tab-content">'
+ h+='<form method=post action=/register>'
+ h+='<div class=lbl>CREAR USUARIO / MATRICULA</div><input class=inp name=new_user placeholder="Ej. 123456" required>'
+ h+='<div class=lbl>NOMBRE COMPLETO</div><input class=inp name=full_name placeholder="Ej. Juan Pérez" required>'
+ h+='<div class=lbl>CORREO ELECTRONICO</div><input class=inp type=email name=email placeholder="tu@correo.com" required>'
+ h+='<div class=lbl>CREAR CONTRASEÑA</div><input class=inp type=password name=new_pass placeholder="Min 6 caracteres" required minlength=6>'
+ h+='<div class=lbl>CONFIRMAR CONTRASEÑA</div><input class=inp type=password name=confirm_pass placeholder="Repetir contraseña" required minlength=6>'
+ h+='<button class=btn>✅ CREAR CUENTA</button>'
+ h+='</form>'
+ h+='</div>'
  h+='<div class=legal>'
  h+='<b>AVISO DE CONFIDENCIALIDAD Y MARCO LEGAL:</b> La informacion contenida, procesada y generada en esta plataforma es de caracter estrictamente confidencial, reservado y de uso exclusivo para los fines de capacitacion y preparacion academica del personal autorizado. Queda prohibida su reproduccion total o parcial, divulgacion, transmision o almacenamiento por cualquier medio sin la autorizacion expresa de la superioridad. Todo acceso, consulta o evaluacion queda registrado mediante bitacoras electronicas de seguridad para efectos de auditoria, control institucional y cumplimiento de las disposiciones normativas aplicables. S.I.E.A. v5.0 - Todos los derechos reservados © 2026.'
  h+='</div></div>'
+ h+='<div class=card-support>'
+ h+='<div style=font-weight:900;letter-spacing:2.5px;color:#FFD700;font-size:12px>SOPORTE Y SUSCRIPCION</div>'
+ h+='<div class=support-info>'
+ h+='<b>📞 SOPORTE TECNICO DIRECTO</b>'
+ h+='<p>Para dudas, reportes o asistencia inmediata:</p>'
+ h+='<div class=support-tel>+52 811 0290152</div>'
+ h+='<p style=font-size:10px;color:#FFD700;margin-top:10px>Disponible de Lunes a Viernes<br>08:00 - 18:00 hrs</p>'
+ h+='</div>'
+ h+='<div class=support-info>'
+ h+='<b>💳 SUSCRIPCION PREMIUM</b>'
+ h+='<p>Acceso ilimitado a todas las materias, reactivos y evaluaciones sin restricciones.</p>'
+ h+='<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">'
+ h+='<input type="hidden" name="cmd" value="_xclick">'
+ h+='<input type="hidden" name="business" value="tu_email_paypal@example.com">'
+ h+='<input type="hidden" name="item_name" value="Suscripción S.I.E.A. Premium">'
+ h+='<input type="hidden" name="amount" value="9.99">'
+ h+='<input type="hidden" name="currency_code" value="USD">'
+ h+='<input type="hidden" name="return" value="http://localhost:5002/payment_success">'
+ h+='<input type="hidden" name="cancel_return" value="http://localhost:5002/">'
+ h+='<button type="submit" class="btn btn-paypal">🔒 PAGAR SUSCRIPCION - $9.99 USD</button>'
+ h+='</form>'
+ h+='</div>'
+ h+='</div>'
+ h+='</div>'
  h+='<div class=foot>PLATAFORMA DE USO INTERNO Y CONTROL INSTITUCIONAL | S.I.E.A. 2026</div>'
  return h
 
@@ -131,17 +201,20 @@ def base(t,b):
 def ix():
  if "user" not in session:
   return login_page()
+ u=session.get("user")
  ma=session.get("materia_actual")
- materias=ld_m()
- total_preg=len(ld())
+ materias_db=ld_m()
+ materias_usuario=materias_db.get(u,[])
+ total_preg=len([p for p in ld() if p.get("usuario")==u])
  if not ma:
   ms={}
   for p in ld():
-   ms[p["materia"]]=ms.get(p["materia"],0)+1
+   if p.get("usuario")==u:
+    ms[p["materia"]]=ms.get(p["materia"],0)+1
   h='<div class="sec-title title-materias">📚 PANEL PRINCIPAL DE MATERIAS Y GESTION</div>'
   h+='<div class=card card-create style="border-left:6px solid #FF9800"><b>➕ CREAR NUEVA MATERIA PERSONALIZADA</b><p style=font-size:11px;color:#FFE0B2;margin:6px 0>Asigne una nomenclatura oficial y cree su materia; posteriormente podrá administrar sus reactivos internos.</p><form method=post action=/add_materia><input class=input name=nueva_materia placeholder="Ej: DERECHOS HUMANOS, ARMAMENTO, LEGISLACION..." required><button class="btn btn-orange">✅ REGISTRAR Y CREAR MATERIA</button></form></div>'
   colores=[("card-hi","btn-hi","#00FF80"),("card-mom","btn-mom","#00E5FF"),("card-ley","btn-ley","#FFD700"),("card-new","btn-gold","#C5A059")]
-  for idx,m in enumerate(materias):
+  for idx,m in enumerate(materias_usuario):
    c=ms.get(m,0)
    card_c,btn_c,col=colores[idx % len(colores)]
    h+=f'<div class=card {card_c}><div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:8px><span style=font-weight:900;font-size:13px>📘 {m}</span><span class=badge style=background:{col};color:#050905>{c} PREGUNTAS</span></div>'
@@ -152,14 +225,14 @@ def ix():
   else:
    h+=f'<div class=card card-gen-vacio><b>⭐ EXAMEN GENERAL (SIN REACTIVOS)</b><p style=font-size:11px;color:#777;margin:6px 0>Agregue preguntas en las materias para habilitar</p><button class="btn" style=background:#222;color:#666 disabled>🚀 MODULO INHABILITADO</button></div>'
   h+='<div class=card card-per><b>🎯 EXAMEN PERSONALIZADO</b><p style=font-size:11px;color:#CE93D8;margin:6px 0>Seleccione y combine las materias de su preferencia para práctica focalizada</p><form method=post action=/exam_personalizado>'
-  for m in materias:
+  for m in materias_usuario:
    c=ms.get(m,0)
    h+=f'<label style=display:block;background:#0A0817;padding:9px;margin:5px 0;border-radius:7px;font-size:12px;border:1px solid #2A1F40><input type=checkbox name=mats value="{m}" style=margin-right:8px> {m} ({c} preg)</label>'
   h+='<button class="btn btn-purple" style=margin-top:10px>✨ GENERAR EXAMEN COMBINADO</button></form></div>'
   return base("INICIO",h)
 
- pr=[p for p in ld() if p["materia"]==ma]
- allp=ld()
+ pr=[p for p in ld() if p["materia"]==ma and p.get("usuario")==u]
+ allp=[p for p in ld() if p.get("usuario")==u]
  b='<div style=margin:12px;display:flex;gap:8px><a href=/cambiar class=btn-inicio>🏠 INICIO - PANEL GENERAL</a></div>'
  b+=f'<div class="sec-title title-trabajando">📂 BANCO DE TRABAJO: {ma} ({len(pr)} REACTIVOS)</div>'
  b+=f'<div class=card card-create style="border-left:6px solid #00FF80"><b>➕ NUEVA PREGUNTA PARA {ma}</b><form method=post action=/add><input class=input name=p placeholder="Escriba el enunciado completo de la pregunta" required><input class=input name=o1 placeholder="Opción A (Respuesta Correcta)" required><input class=input name=o2 placeholder="Opción B" required><input class=input name=o3 placeholder="Opción C" required><input class=input name=o4 placeholder="Opción D" required><select class=input name=c><option value=0>Opción A es la correcta</option><option value=1>Opción B es la correcta</option><option value=2>Opción C es la correcta</option><option value=3>Opción D es la correcta</option></select><button class="btn btn-green">💾 GUARDAR REACTIVO OFICIAL</button></form></div>'
@@ -173,18 +246,81 @@ def ix():
   b+=f'<div class=card card-preg><div style=display:flex;justify-content:space-between><span class=badge style=background:#00FF80;color:#050905>{p["materia"]}</span><span class=badge style=background:#00E5FF;color:#050905>Correcta: {correcta}</span></div><b style=display:block;margin:10px 0;font-size:13px>{p["p"]}</b><div style=font-size:11px;line-height:1.6;opacity:0.9>A) {p["op"][0]}<br>B) {p["op"][1]}<br>C) {p["op"][2]}<br>D) {p["op"][3]}</div><div style=margin-top:12px><a href=/edit/{idx} class=btn-edit>✏️ EDITAR REACTIVO</a><a href=/del/{idx} class=btn-del>🗑️ ELIMINAR</a></div></div>'
  return base(ma,b)
 
+@app.route("/login",methods=["POST"])
+def lg():
+ u=request.form.get("user","").strip().upper()
+ p=request.form.get("pass","").strip()
+ us=ld_u()
+ 
+ if u not in us:
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ Usuario no encontrado. Cree una cuenta primero.</div>'
+ 
+ if us[u]["password_hash"] != hash_password(p):
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ Contraseña incorrecta.</div>'
+ 
+ if not us[u].get("approved",False):
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>⏳ Tu cuenta está pendiente de aprobación por el administrador. Contacta al soporte: +52 811 0290152</div>'
+ 
+ session["user"]=u
+ return redirect("/")
+
+@app.route("/register",methods=["POST"])
+def register():
+ nu=request.form.get("new_user","").strip().upper()
+ fn=request.form.get("full_name","").strip()
+ em=request.form.get("email","").strip()
+ np=request.form.get("new_pass","").strip()
+ cp=request.form.get("confirm_pass","").strip()
+ 
+ us=ld_u()
+ 
+ if nu in us:
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ Este usuario ya existe.</div>'
+ 
+ if np != cp:
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ Las contraseñas no coinciden.</div>'
+ 
+ if len(np) < 6:
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ La contraseña debe tener mínimo 6 caracteres.</div>'
+ 
+ us[nu]={
+  "full_name":fn,
+  "email":em,
+  "password_hash":hash_password(np),
+  "approved":False,
+  "created_at":dt.now().strftime("%d/%m/%Y %H:%M"),
+  "subscription":"free"
+ }
+ sv_u(us)
+ 
+ mats_db=ld_m()
+ mats_db[nu]=[]
+ sv_m(mats_db)
+ 
+ return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=success-msg>✅ Cuenta creada exitosamente. Tu solicitud ha sido enviada al administrador para aprobación. Recibirás un correo cuando sea aprobada.</div>'
+
+@app.route("/logout")
+def lo():
+ session.clear()
+ return redirect("/")
+
 @app.route("/add_materia",methods=["POST"])
 def add_mat():
+ u=session.get("user")
  nueva=request.form.get("nueva_materia","").strip().upper()
- mats=ld_m()
- if nueva and nueva not in mats:
-  mats.append(nueva)
-  sv_m(mats)
+ mats_db=ld_m()
+ if u not in mats_db:
+  mats_db[u]=[]
+ if nueva and nueva not in mats_db[u]:
+  mats_db[u].append(nueva)
+  sv_m(mats_db)
  return redirect("/")
 
 @app.route("/edit_materia/<int:i>",methods=["GET","POST"])
 def edit_mat(i):
- mats=ld_m()
+ u=session.get("user")
+ mats_db=ld_m()
+ mats=mats_db.get(u,[])
  if not (0<=i<len(mats)):
   return redirect("/")
  if request.method=="POST":
@@ -193,24 +329,28 @@ def edit_mat(i):
    viejo=mats[i]
    preg=ld()
    for p in preg:
-    if p["materia"]==viejo:
+    if p["materia"]==viejo and p.get("usuario")==u:
      p["materia"]=nuevo
    sv(preg)
    mats[i]=nuevo
-   sv_m(mats)
+   mats_db[u]=mats
+   sv_m(mats_db)
   return redirect("/")
  viejo=mats[i]
  return base("EDITAR MATERIA",f'<div class=card card-create style=margin:12px><b>✏️ MODIFICAR NOMENCLATURA: {viejo}</b><form method=post><input class=input name=nuevo_nombre value="{viejo}" required><button class="btn btn-orange">💾 ACTUALIZAR NOMBRE</button></form><a href=/ class=btn-back style=margin-top:10px;display:inline-block>REGRESAR</a></div>')
 
 @app.route("/del_materia/<int:i>")
 def del_mat(i):
- mats=ld_m()
+ u=session.get("user")
+ mats_db=ld_m()
+ mats=mats_db.get(u,[])
  if 0<=i<len(mats):
   bor=mats[i]
-  preg=[x for x in ld() if x["materia"]!=bor]
+  preg=[x for x in ld() if not (x["materia"]==bor and x.get("usuario")==u)]
   sv(preg)
   mats.pop(i)
-  sv_m(mats)
+  mats_db[u]=mats
+  sv_m(mats_db)
  return redirect("/")
 
 @app.route("/set_materia",methods=["POST"])
@@ -224,52 +364,39 @@ def ca():
  session.pop("materia_actual",None)
  return redirect("/")
 
-@app.route("/login",methods=["POST"])
-def lg():
- u=request.form.get("user","").strip().upper()
- p=request.form.get("pass","").strip()
- us=ld_u()
- if u in us and us[u]!=p:
-  return "Credenciales incorrectas. <a href=/>Volver</a>"
- if u not in us:
-  us[u]=p
-  sv_u(us)
- session["user"]=u
- return redirect("/")
-
-@app.route("/logout")
-def lo():
- session.clear()
- return redirect("/")
-
 @app.route("/historial")
 def hi():
+ u=session.get("user")
  h=ld_h()
+ h_usuario=[x for x in h if x.get("usuario")==u]
  b='<div class=card card-create style="border-left:6px solid #FFD700"><b>📋 HISTORIAL INSTITUCIONAL DE EVALUACIONES</b></div>'
- for x in reversed(h):
+ for x in reversed(h_usuario):
   b+=f'<div class=card card-hi><b>{x["titulo"]}</b><br>Calificación: {x["por"]}%<br>Fecha y Hora: {x["fecha"]}</div>'
  return base("HISTORIAL",b)
 
 @app.route("/add",methods=["POST"])
 def ad():
+ u=session.get("user")
  mat=session.get("materia_actual")
  p=ld()
- p.append({"materia":mat,"p":request.form.get("p",""),"op":[request.form.get("o1",""),request.form.get("o2",""),request.form.get("o3",""),request.form.get("o4","")],"co":int(request.form.get("c",0))})
+ p.append({"usuario":u,"materia":mat,"p":request.form.get("p",""),"op":[request.form.get("o1",""),request.form.get("o2",""),request.form.get("o3",""),request.form.get("o4","")],"co":int(request.form.get("c",0))})
  sv(p)
  return redirect("/")
 
 @app.route("/del/<int:i>")
 def dl(i):
+ u=session.get("user")
  d=ld()
- if 0<=i<len(d):
+ if 0<=i<len(d) and d[i].get("usuario")==u:
   d.pop(i)
   sv(d)
  return redirect("/")
 
 @app.route("/edit/<int:i>",methods=["GET","POST"])
 def ed(i):
+ u=session.get("user")
  d=ld()
- if not (0<=i<len(d)): return redirect("/")
+ if not (0<=i<len(d)) or d[i].get("usuario")!=u: return redirect("/")
  if request.method=="POST":
   d[i]["p"]=request.form.get("p","")
   d[i]["op"]=[request.form.get("o1",""),request.form.get("o2",""),request.form.get("o3",""),request.form.get("o4","")]
@@ -295,31 +422,35 @@ def rex(preg,titulo):
 
 @app.route("/exam_materia",methods=["GET","POST"])
 def em():
+ u=session.get("user")
  m=(request.form.get("m") or request.args.get("m") or session.get("materia_actual") or "").strip().upper()
  if not m: return redirect("/")
- pr=[p for p in ld() if p["materia"]==m]
+ pr=[p for p in ld() if p["materia"]==m and p.get("usuario")==u]
  if not pr: return base(m,f'<div class=card>No hay reactivos registrados en {m} - <a href=/ class=btn-back>VOLVER</a></div>')
  random.shuffle(pr)
  return rex(pr,f"EXAMEN {m}")
 
 @app.route("/exam_general",methods=["GET","POST"])
 def eg():
- pr=ld()
+ u=session.get("user")
+ pr=[p for p in ld() if p.get("usuario")==u]
  if not pr: return base("GENERAL",'<div class=card>Sin reactivos disponibles. Registre materias y preguntas previamente.</div>')
  random.shuffle(pr)
  return rex(pr,"EXAMEN GENERAL")
 
 @app.route("/exam_personalizado",methods=["GET","POST"])
 def ep():
+ u=session.get("user")
  ms=request.form.getlist("mats")
  if not ms: return redirect("/")
- pr=[p for p in ld() if p["materia"] in ms]
+ pr=[p for p in ld() if p["materia"] in ms and p.get("usuario")==u]
  if not pr: return base("PERSONALIZADO",'<div class=card>No hay reactivos en las materias seleccionadas.</div>')
  random.shuffle(pr)
  return rex(pr,"EXAMEN "+" + ".join(ms))
 
 @app.route("/cal",methods=["POST"])
 def ca2():
+ u=session.get("user")
  ex=session.get("ex",[])
  ti=session.get("titulo","EXAMEN")
  ok=0
@@ -347,10 +478,9 @@ def ca2():
   detalle+='</div>'
 
  po=int(ok/len(ex)*100) if ex else 0
- from datetime import datetime as dt
  fe=dt.now().strftime("%d/%m/%Y %H:%M")
  h=ld_h()
- h.append({"fecha":fe,"titulo":ti,"por":po})
+ h.append({"usuario":u,"fecha":fe,"titulo":ti,"por":po})
  sv_h(h)
  
  b=f'<div class=card style=text-align:center;padding:20px><h1 style=font-size:42px;color:#00FF80;margin:0>{po}%</h1><p style=font-size:14px>{ok} aciertos de {len(ex)} totales</p></div>'
@@ -358,6 +488,11 @@ def ca2():
  b+=detalle
  b+='<div style=margin:20px;display:flex;gap:10px;justify-content:center><a href=/cambiar class=btn-inicio>🏠 INICIO</a><a href=/historial class=btn-back>HISTORIAL</a></div>'
  return base(ti,b)
+
+@app.route("/payment_success")
+def payment_success():
+ return base("SUSCRIPCION","<div class=card style=text-align:center><b style=color:#00FF80>✅ PAGO PROCESADO EXITOSAMENTE</b><p>Tu suscripción ha sido activada. Disfruta de acceso ilimitado.</p><a href=/ class=btn-back>VOLVER AL INICIO</a></div>")
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5002))
     app.run(host="0.0.0.0", port=port)
