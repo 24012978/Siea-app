@@ -132,10 +132,10 @@ def login_page():
  h+='<p style="font-size:10px;color:#FFD700;margin-top:10px">Disponible de Lunes a Viernes<br>08:00 - 18:00 hrs</p>'
  h+='</div>'
  h+='<div style="border-left:3px solid #a855f7;background:#1a102a;padding:15px;border-radius:12px;text-align:center;">'
-h+='<b style="color:#a855f7;">SUSCRIPCION</b><p>Acceso ilimitado a todas las materias y evaluaciones.</p>'
-h+='<a href="https://wa.me/528110290152?text=Hola%20quiero%20pagar%20suscripcion%2049%20MXN" target="_blank" style="display:block;background:#a855f7;color:white;padding:12px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:10px;">PAGAR SUSCRIPCION - $49 MXN</a></div>'
- h+='</div>'
- h+='</div>'
+h+='<b style="color:#a855f7;">SUSCRIPCION</b>'
+h+='<p>Acceso ilimitado a todas las materias.</p>'
+h+='<a href="https://wa.me/528110290152" target="_blank" style="display:block;background:#a855f7;color:white;padding:12px;border-radius:10px;text-decoration:none;font-weight:bold;">PAGAR SUSCRIPCION - $49 MXN</a>'
+h+='</div>'
  h+='<div class=foot>PLATAFORMA DE USO INTERNO Y CONTROL INSTITUCIONAL | S.I.E.A. 2026</div>'
  return h
 
