@@ -60,7 +60,7 @@ def login_page():
  h+='<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">'
  h+='<style>'
  h+='body{margin:0;background:#050B05;color:#E0EFE0;font-family:Montserrat,system-ui;min-height:100vh;display:flex;flex-direction:column}'
- h+='.hero{background:radial-gradient(ellipse at 20% 20%, rgba(0,255,128,0.15), transparent 55%), linear-gradient(180deg,#0D1A0D 0%,#050905 100%);border-bottom:2px solid #00FF80;padding:22px 14px}'
+ h+='.hero{background:radial-gradient(ellipse at 20% 20%, rgba(0,255,128,0.15), transparent 55%), linear-gradient(180deg,#0D1A0D 0%,#050905 100%);border-bottom:2px solid #00FF80;padding:22px 14px}[...]
  h+='.sigla{font-size:38px;font-weight:900;font-style:italic;letter-spacing:5px;color:#FFD700;text-shadow:0 3px 15px rgba(255,215,0,0.4)}'
  h+='.sub{font-size:10px;letter-spacing:3px;color:#8AB38A;font-weight:700;margin-top:4px}'
  h+='.purpose{background:rgba(0,0,0,0.6);border-left:4px solid #FFD700;padding:12px;margin-top:14px;border-radius:0 10px 10px 0}'
@@ -68,7 +68,7 @@ def login_page():
  h+='.purpose p{font-size:11px;line-height:1.6;color:#D2DCD2;margin:6px 0 0 0;text-align:justify}'
  h+='.container{display:flex;flex:1;gap:20px;padding:20px;flex-wrap:wrap;justify-content:center}'
  h+='.card-login{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(0,255,128,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8)}'
- h+='.card-support{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8);text-align:center}'
+ h+='.card-support{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8);text-align:[...]
  h+='.lbl{font-size:9px;letter-spacing:1.5px;color:#00FF80;font-weight:700;margin:12px 0 4px 2px}'
  h+='.inp{width:100%;padding:13px;background:#020502;border:1.5px solid #1A401A;border-radius:10px;color:#fff;box-sizing:border-box;font-size:13px}'
  h+='.btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:900;letter-spacing:2px;margin-top:16px;background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;cursor:pointer}'
@@ -94,14 +94,14 @@ def login_page():
  h+='<div class=sub>SISTEMA INTEGRAL DE EVALUACION PARA EL ASCENSO</div>'
  h+='<div class=purpose>'
  h+='<b>PROPOSITO Y FUNCION INSTITUCIONAL</b>'
- h+='<p>Plataforma de fortalecimiento academico e institucional disenada bajo estrictos estándares de calidad para optimizar la preparacion, evaluacion y profesionalizacion del personal en proceso de ascenso. Centraliza bancos de reactivos oficiales por materia, genera evaluaciones aleatorizadas de alta exigencia, audita el rendimiento y otorga metricas precisas de desempeno para garantizar la mejora continua y la excelencia operativa bajo normativas vigentes.</p>'
+ h+='<p>Plataforma de fortalecimiento academico e institucional disenada bajo estrictos estándares de calidad para optimizar la preparacion, evaluacion y profesionalizacion del personal en proces[...]
  h+='</div></div>'
  h+='<div class=container>'
  h+='<div class=card-login>'
- h+='<div style=text-align:center><div style=font-weight:900;letter-spacing:2.5px;color:#00FF80;font-size:12px>ACCESO AUTORIZADO</div><div style=font-size:9px;color:#7EA97E;margin-top:3px;letter-spacing:1px>PERSONAL EN PREPARACION</div></div>'
+ h+='<div style=text-align:center><div style=font-weight:900;letter-spacing:2.5px;color:#00FF80;font-size:12px>ACCESO AUTORIZADO</div><div style=font-size:9px;color:#7EA97E;margin-top:3px;letter-[...]
  h+='<div class=tab-buttons>'
- h+='<button type=button class="tab-btn active" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'login-form\').classList.add(\'active\'); this.classList.add(\'active\'); this.parentElement.querySelector(\'.tab-btn:last-child\').classList.remove(\'active\')">🔓 INGRESAR</button>'
- h+='<button type=button class="tab-btn" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'register-form\').classList.add(\'active\'); this.classList.add(\'active\'); this.parentElement.querySelector(\'.tab-btn:first-child\').classList.remove(\'active\')">📝 REGISTRARSE</button>'
+ h+='<button type=button class="tab-btn active" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'login-form\').classList.[...]
+ h+='<button type=button class="tab-btn" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'register-form\').classList.add([...]
  h+='</div>'
  h+='<div id=login-form class="tab-content active">'
  h+='<form method=post action=/login>'
@@ -121,7 +121,7 @@ def login_page():
  h+='</form>'
  h+='</div>'
  h+='<div class=legal>'
- h+='<b>AVISO DE CONFIDENCIALIDAD Y MARCO LEGAL:</b> La informacion contenida, procesada y generada en esta plataforma es de caracter estrictamente confidencial, reservado y de uso exclusivo para los fines de capacitacion y preparacion academica del personal autorizado. Queda prohibida su reproduccion total o parcial, divulgacion, transmision o almacenamiento por cualquier medio sin la autorizacion expresa de la superioridad. Todo acceso, consulta o evaluacion queda registrado mediante bitacoras electronicas de seguridad para efectos de auditoria, control institucional y cumplimiento de las disposiciones normativas aplicables. S.I.E.A. v5.0 - Todos los derechos reservados © 2026.'
+ h+='<b>AVISO DE CONFIDENCIALIDAD Y MARCO LEGAL:</b> La informacion contenida, procesada y generada en esta plataforma es de caracter estrictamente confidencial, reservado y de uso exclusivo para[...]
  h+='</div></div>'
  h+='<div class=card-support>'
  h+='<div style=font-weight:900;letter-spacing:2.5px;color:#FFD700;font-size:12px>SOPORTE Y SUSCRIPCION</div>'
@@ -152,7 +152,7 @@ def login_page():
 
 def base(t,b):
  u=session.get("user","")
- frases=["( La disciplina es la clave del éxito operativo )", "( La constancia vence lo que la dicha no alcanza )", "( El conocimiento es poder y preparación )", "( Cada pregunta respondida es un paso hacia la meta )"]
+ frases=["( La disciplina es la clave del éxito operativo )", "( La constancia vence lo que la dicha no alcanza )", "( El conocimiento es poder y preparación )", "( Cada pregunta respondida es [...]
  f_activa = random.choice(frases)
  h=""
  h+='<meta name=viewport content="width=device-width,initial-scale=1">'
@@ -164,7 +164,7 @@ def base(t,b):
  h+='.user-info{font-size:12px;color:#00FF80;font-weight:700}'
  h+='.sub-bar{font-size:9px;color:#A0C8A0;font-style:italic;margin-top:2px}'
  h+='.btn-back{background:#1A331A;color:#fff;padding:7px 12px;border-radius:7px;text-decoration:none;font-size:11px;border:1px solid #2E5A2E;display:inline-block}'
- h+='.btn-inicio{background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1px;display:inline-block;box-shadow:0 2px 8px rgba(0,255,128,0.3)}'
+ h+='.btn-inicio{background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1px;displa[...]
  h+='.sec-title{color:#050905;padding:11px;text-align:center;font-weight:900;border-radius:9px;margin:12px;font-size:12px;letter-spacing:0.5px}'
  h+='.title-materias{background:linear-gradient(90deg,#FFD700,#FFA500)}'
  h+='.title-trabajando{background:linear-gradient(90deg,#00E5FF,#00839F)}'
@@ -194,7 +194,7 @@ def base(t,b):
  h+='.badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;display:inline-block}'
  h+='</style>'
  h+=f'<div class=top>S.I.E.A. - {t}</div>'
- h+=f'<div class=bar><div><div class=user-info>Bienvenido, {u}</div><div class=sub-bar>{f_activa}</div></div><div><a href=/historial class=btn-back>HISTORIAL</a> <a href=/logout class=btn-back>SALIR</a></div></div>'
+ h+=f'<div class=bar><div><div class=user-info>Bienvenido, {u}</div><div class=sub-bar>{f_activa}</div></div><div><a href=/admin class=btn-back>ADMIN</a> <a href=/historial class=btn-back>HISTORIAL</a> <a href=/logout class=btn-back>SA[...]
  return h + b
 
 @app.route("/")
@@ -212,22 +212,22 @@ def ix():
    if p.get("usuario")==u:
     ms[p["materia"]]=ms.get(p["materia"],0)+1
   h='<div class="sec-title title-materias">📚 PANEL PRINCIPAL DE MATERIAS Y GESTION</div>'
-  h+='<div class=card card-create style="border-left:6px solid #FF9800"><b>➕ CREAR NUEVA MATERIA PERSONALIZADA</b><p style=font-size:11px;color:#FFE0B2;margin:6px 0>Asigne una nomenclatura oficial y cree su materia; posteriormente podrá administrar sus reactivos internos.</p><form method=post action=/add_materia><input class=input name=nueva_materia placeholder="Ej: DERECHOS HUMANOS, ARMAMENTO, LEGISLACION..." required><button class="btn btn-orange">✅ REGISTRAR Y CREAR MATERIA</button></form></div>'
+  h+='<div class=card card-create style="border-left:6px solid #FF9800"><b>➕ CREAR NUEVA MATERIA PERSONALIZADA</b><p style=font-size:11px;color:#FFE0B2;margin:6px 0>Asigne una nomenclatura ofic[...]
   colores=[("card-hi","btn-hi","#00FF80"),("card-mom","btn-mom","#00E5FF"),("card-ley","btn-ley","#FFD700"),("card-new","btn-gold","#C5A059")]
   for idx,m in enumerate(materias_usuario):
    c=ms.get(m,0)
    card_c,btn_c,col=colores[idx % len(colores)]
-   h+=f'<div class=card {card_c}><div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:8px><span style=font-weight:900;font-size:13px>📘 {m}</span><span class=badge style=background:{col};color:#050905>{c} PREGUNTAS</span></div>'
+   h+=f'<div class=card {card_c}><div style=display:flex;justify-content:space-between;align-items:center;margin-bottom:8px><span style=font-weight:900;font-size:13px>📘 {m}</span><span class=b[...]
    h+=f'<form method=post action=/set_materia><input type=hidden name=materia value="{m}"><button class="btn {btn_c}">📂 ACCEDER A {m} - GESTIÓN Y REACTIVOS</button></form>'
-   h+=f'<div style=margin-top:10px;display:flex;gap:6px><a href=/edit_materia/{idx} class=btn-edit style=flex:1;text-align:center>✏️ EDITAR MATERIA</a><a href=/del_materia/{idx} class=btn-del style=flex:1;text-align:center>🗑️ BORRAR</a></div></div>'
+   h+=f'<div style=margin-top:10px;display:flex;gap:6px><a href=/edit_materia/{idx} class=btn-edit style=flex:1;text-align:center>✏️ EDITAR MATERIA</a><a href=/del_materia/{idx} class=btn-del[...]
   if total_preg>0:
-   h+=f'<div class=card card-gen><div style=display:flex;justify-content:space-between;align-items:center><b>⭐ EXAMEN GENERAL</b><span class=badge style=background:#FFD700;color:#050905>{total_preg} PREG TOTAL</span></div><p style=font-size:11px;color:#FFD700;margin:6px 0>Evaluación general que integra todas las materias registradas</p><form method=post action=/exam_general><button class="btn btn-gold">🚀 INICIAR EXAMEN GENERAL - {total_preg} PREGUNTAS</button></form></div>'
+   h+=f'<div class=card card-gen><div style=display:flex;justify-content:space-between;align-items:center><b>⭐ EXAMEN GENERAL</b><span class=badge style=background:#FFD700;color:#050905>{total_[...]
   else:
-   h+=f'<div class=card card-gen-vacio><b>⭐ EXAMEN GENERAL (SIN REACTIVOS)</b><p style=font-size:11px;color:#777;margin:6px 0>Agregue preguntas en las materias para habilitar</p><button class="btn" style=background:#222;color:#666 disabled>🚀 MODULO INHABILITADO</button></div>'
-  h+='<div class=card card-per><b>🎯 EXAMEN PERSONALIZADO</b><p style=font-size:11px;color:#CE93D8;margin:6px 0>Seleccione y combine las materias de su preferencia para práctica focalizada</p><form method=post action=/exam_personalizado>'
+   h+=f'<div class=card card-gen-vacio><b>⭐ EXAMEN GENERAL (SIN REACTIVOS)</b><p style=font-size:11px;color:#777;margin:6px 0>Agregue preguntas en las materias para habilitar</p><button class="[...]
+  h+='<div class=card card-per><b>🎯 EXAMEN PERSONALIZADO</b><p style=font-size:11px;color:#CE93D8;margin:6px 0>Seleccione y combine las materias de su preferencia para práctica focalizada</p>[...]
   for m in materias_usuario:
    c=ms.get(m,0)
-   h+=f'<label style=display:block;background:#0A0817;padding:9px;margin:5px 0;border-radius:7px;font-size:12px;border:1px solid #2A1F40><input type=checkbox name=mats value="{m}" style=margin-right:8px> {m} ({c} preg)</label>'
+   h+=f'<label style=display:block;background:#0A0817;padding:9px;margin:5px 0;border-radius:7px;font-size:12px;border:1px solid #2A1F40><input type=checkbox name=mats value="{m}" style=margin-ri[...]
   h+='<button class="btn btn-purple" style=margin-top:10px>✨ GENERAR EXAMEN COMBINADO</button></form></div>'
   return base("INICIO",h)
 
@@ -235,15 +235,15 @@ def ix():
  allp=[p for p in ld() if p.get("usuario")==u]
  b='<div style=margin:12px;display:flex;gap:8px><a href=/cambiar class=btn-inicio>🏠 INICIO - PANEL GENERAL</a></div>'
  b+=f'<div class="sec-title title-trabajando">📂 BANCO DE TRABAJO: {ma} ({len(pr)} REACTIVOS)</div>'
- b+=f'<div class=card card-create style="border-left:6px solid #00FF80"><b>➕ NUEVA PREGUNTA PARA {ma}</b><form method=post action=/add><input class=input name=p placeholder="Escriba el enunciado completo de la pregunta" required><input class=input name=o1 placeholder="Opción A (Respuesta Correcta)" required><input class=input name=o2 placeholder="Opción B" required><input class=input name=o3 placeholder="Opción C" required><input class=input name=o4 placeholder="Opción D" required><select class=input name=c><option value=0>Opción A es la correcta</option><option value=1>Opción B es la correcta</option><option value=2>Opción C es la correcta</option><option value=3>Opción D es la correcta</option></select><button class="btn btn-green">💾 GUARDAR REACTIVO OFICIAL</button></form></div>'
+ b+=f'<div class=card card-create style="border-left:6px solid #00FF80"><b>➕ NUEVA PREGUNTA PARA {ma}</b><form method=post action=/add><input class=input name=p placeholder="Escriba el enunciad[...]
  if len(pr)==0:
-  b+=f'<div class=card style=background:#2A1111;border:1px solid #5A1A1A><b style=color:#FF8A80>⚠️ Sin reactivos en {ma}</b><p style=font-size:11px;color:#BCAAA4>Utilice el formulario superior para incorporar el primer reactivo a esta materia.</p></div>'
+  b+=f'<div class=card style=background:#2A1111;border:1px solid #5A1A1A><b style=color:#FF8A80>⚠️ Sin reactivos en {ma}</b><p style=font-size:11px;color:#BCAAA4>Utilice el formulario superio[...]
  for p in allp:
   if p["materia"]!=ma: continue
   idx = allp.index(p)
   letras=["A","B","C","D"]
   correcta=letras[p["co"]]
-  b+=f'<div class=card card-preg><div style=display:flex;justify-content:space-between><span class=badge style=background:#00FF80;color:#050905>{p["materia"]}</span><span class=badge style=background:#00E5FF;color:#050905>Correcta: {correcta}</span></div><b style=display:block;margin:10px 0;font-size:13px>{p["p"]}</b><div style=font-size:11px;line-height:1.6;opacity:0.9>A) {p["op"][0]}<br>B) {p["op"][1]}<br>C) {p["op"][2]}<br>D) {p["op"][3]}</div><div style=margin-top:12px><a href=/edit/{idx} class=btn-edit>✏️ EDITAR REACTIVO</a><a href=/del/{idx} class=btn-del>🗑️ ELIMINAR</a></div></div>'
+  b+=f'<div class=card card-preg><div style=display:flex;justify-content:space-between><span class=badge style=background:#00FF80;color:#050905>{p["materia"]}</span><span class=badge style=backgr[...]
  return base(ma,b)
 
 @app.route("/login",methods=["POST"])
@@ -258,10 +258,13 @@ def lg():
  if us[u]["password_hash"] != hash_password(p):
   return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>❌ Contraseña incorrecta.</div>'
  
- if not us[u].get("approved",False):
-  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>⏳ Tu cuenta está pendiente de aprobación por el administrador. Contacta al soporte: +52 811 0290152</div>'
+ usuario = us[u]
+ if usuario.get("status") != "aprobado":
+  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>⏳ Tu cuenta está pendiente de aprobación por el administrador. Contacta al soporte: +52 811 02[...]
  
- session["user"]=u
+ session["user"] = u
+ session["role"] = usuario.get("role", "user")
+ session["u"] = usuario.get("email", "")
  return redirect("/")
 
 @app.route("/register",methods=["POST"])
@@ -287,9 +290,9 @@ def register():
   "full_name":fn,
   "email":em,
   "password_hash":hash_password(np),
-  "approved":False,
-  "created_at":dt.now().strftime("%d/%m/%Y %H:%M"),
-  "subscription":"free"
+  "status":"pendiente",
+  "role":"user",
+  "created_at":dt.now().strftime("%d/%m/%Y %H:%M")
  }
  sv_u(us)
  
@@ -297,7 +300,7 @@ def register():
  mats_db[nu]=[]
  sv_m(mats_db)
  
- return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=success-msg>✅ Cuenta creada exitosamente. Tu solicitud ha sido enviada al administrador para aprobación. Recibirás un correo cuando sea aprobada.</div>'
+ return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=success-msg>✅ Cuenta creada exitosamente. Tu solicitud ha sido enviada al administrador para aprobación. R[...]
 
 @app.route("/logout")
 def lo():
@@ -337,7 +340,7 @@ def edit_mat(i):
    sv_m(mats_db)
   return redirect("/")
  viejo=mats[i]
- return base("EDITAR MATERIA",f'<div class=card card-create style=margin:12px><b>✏️ MODIFICAR NOMENCLATURA: {viejo}</b><form method=post><input class=input name=nuevo_nombre value="{viejo}" required><button class="btn btn-orange">💾 ACTUALIZAR NOMBRE</button></form><a href=/ class=btn-back style=margin-top:10px;display:inline-block>REGRESAR</a></div>')
+ return base("EDITAR MATERIA",f'<div class=card card-create style=margin:12px><b>✏️ MODIFICAR NOMENCLATURA: {viejo}</b><form method=post><input class=input name=nuevo_nombre value="{viejo}" r[...]
 
 @app.route("/del_materia/<int:i>")
 def del_mat(i):
@@ -379,7 +382,7 @@ def ad():
  u=session.get("user")
  mat=session.get("materia_actual")
  p=ld()
- p.append({"usuario":u,"materia":mat,"p":request.form.get("p",""),"op":[request.form.get("o1",""),request.form.get("o2",""),request.form.get("o3",""),request.form.get("o4","")],"co":int(request.form.get("c",0))})
+ p.append({"usuario":u,"materia":mat,"p":request.form.get("p",""),"op":[request.form.get("o1",""),request.form.get("o2",""),request.form.get("o3",""),request.form.get("o4","")],"co":int(request.f[...]
  sv(p)
  return redirect("/")
 
@@ -404,7 +407,7 @@ def ed(i):
   sv(d)
   return redirect("/")
  q=d[i]
- return base("EDITAR REACTIVO",f'<div class=card card-create style=margin:12px><b>✏️ MODIFICAR REACTIVO</b><form method=post><input class=input name=p value="{q["p"]}"><input class=input name=o1 value="{q["op"][0]}"><input class=input name=o2 value="{q["op"][1]}"><input class=input name=o3 value="{q["op"][2]}"><input class=input name=o4 value="{q["op"][3]}"><select class=input name=c><option value=0 {"selected" if q["co"]==0 else ""}>A correcta</option><option value=1 {"selected" if q["co"]==1 else ""}>B correcta</option><option value=2 {"selected" if q["co"]==2 else ""}>C correcta</option><option value=3 {"selected" if q["co"]==3 else ""}>D correcta</option></select><button class="btn btn-green">💾 GUARDAR MODIFICACIONES</button></form><a href=/cambiar class=btn-back style=margin-top:10px;display:inline-block>CANCELAR</a></div>')
+ return base("EDITAR REACTIVO",f'<div class=card card-create style=margin:12px><b>✏️ MODIFICAR REACTIVO</b><form method=post><input class=input name=p value="{q["p"]}"><input class=input name[...]
 
 def rex(preg,titulo):
  session["ex"]=preg
@@ -413,7 +416,7 @@ def rex(preg,titulo):
  b+='<div style=margin:12px><a href=/cambiar class=btn-inicio>🏠 INICIO</a></div>'
  b+=f'<form method=post action=/cal>'
  for i,q in enumerate(preg):
-  b+=f'<div class=card card-hi><div style=display:flex;justify-content:space-between><span class=badge style=background:#00FF80;color:#050905>{q["materia"]}</span><span>{i+1}/{len(preg)}</span></div><b style=display:block;margin:10px 0>{q["p"]}</b>'
+  b+=f'<div class=card card-hi><div style=display:flex;justify-content:space-between><span class=badge style=background:#00FF80;color:#050905>{q["materia"]}</span><span>{i+1}/{len(preg)}</span></[...]
   for j,op in enumerate(q["op"]):
    b+=f'<label class=opt><input type=radio name="r{i}" value="{j}" required> {op}</label>'
   b+='</div>'
@@ -488,49 +491,37 @@ def ca2():
  b+=detalle
  b+='<div style=margin:20px;display:flex;gap:10px;justify-content:center><a href=/cambiar class=btn-inicio>🏠 INICIO</a><a href=/historial class=btn-back>HISTORIAL</a></div>'
  return base(ti,b)
+
 @app.route("/admin")
 def admin_panel():
-    if session.get("role") != "admin" and session.get("u") != "admin":
-        return base("ACCESO DENEGADO","<h2>Solo admin</h2><a href='/'>Inicio</a>")
-
-    usuarios = ld_u()
-    html = "<h2>Usuarios pendientes de aprobación</h2>"
-    hay = False
-    for u in usuarios:
-        if u.get("status") == "pendiente":
-            hay = True
-            html += f"""
-            <div class=card style='border:1px solid #00FF80;padding:10px;margin:10px'>
-                {u.get('username')} - {u.get('email')} - ID:{u.get('id')}
-                <a href='/admin/aprobar/{u.get('id')}'><button style='background:#00FF80'>Aprobar</button></a>
-                <a href='/admin/rechazar/{u.get('id')}'><button style='background:#FF5555'>Rechazar</button></a>
-            </div>
-            """
-    if not hay:
-        html += "<p>No hay pendientes</p>"
-    
-    return base("PANEL ADMIN", html)
+ if session.get("role") != "admin":
+  return base("ACCESO DENEGADO",'<div class=card style=text-align:center><b>❌ Solo el administrador puede acceder</b><br><a href=/ class=btn-back>Volver al inicio</a></div>')
+ 
+ us=ld_u()
+ html='<div class="sec-title title-materias">👥 USUARIOS PENDIENTES DE APROBACION</div>'
+ hay=False
+ for username, usuario in us.items():
+  if usuario.get("status") == "pendiente":
+   hay=True
+   email=usuario.get("email","N/A")
+   html+=f'<div class=card style="border-left:6px solid #FFD700;padding:12px"><div style=display:flex;justify-content:space-between;align-items:center><div><b>{username}</b><br><span style=font-size:10px;color:#AAA>{email}</span></div><a href="/admin/aprobar/{username}" class=btn-inicio style=width:auto>✅ APROBAR</a></div></div>'
+ if not hay:
+  html+='<div class=card style=text-align:center><b>✅ No hay usuarios pendientes</b></div>'
+ 
+ return base("PANEL ADMIN",html)
 
 @app.route("/admin/aprobar/<uid>")
 def admin_aprobar(uid):
-    usuarios = ld_u()
-    for u in usuarios:
-        if str(u.get("id")) == str(uid):
-            u["status"] = "aprobado"
-    sv_u(usuarios)
-    return redirect("/admin")
-
-@app.route("/admin/rechazar/<uid>")
-def admin_rechazar(uid):
-    usuarios = ld_u()
-    usuarios = [u for u in usuarios if str(u.get("id")) != str(uid)]
-    sv_u(usuarios)
-    return redirect("/admin")
+ us=ld_u()
+ if uid in us:
+  us[uid]["status"]="aprobado"
+  sv_u(us)
+ return redirect("/admin")
 
 @app.route("/payment_success")
 def payment_success():
-    return base("SUSCRIPCION","<div class=card style=text-align:center><b style=col")
+ return base("SUSCRIPCION","<div class=card style=text-align:center><b style=col")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5002))
-    app.run(host="0.0.0.0", port=port)
+ port = int(os.environ.get("PORT", 5002))
+ app.run(host="0.0.0.0", port=port)
