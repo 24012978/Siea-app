@@ -267,7 +267,36 @@ def lg():
  session["u"] = usuario.get("email", "")
  return redirect("/")
 
-@app.route("/re
+@app.route("/register", methods=["GET","POST"])
+def reg():
+    if request.method=="POST":
+        u=request.form.get("user","").strip().upper()
+        p=request.form.get("pass","").strip()
+        e=request.form.get("email","").strip()
+        if not u or not p:
+            return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class="error-msg">Faltan datos</div>'
+        adm=ld_admin()
+        if u in adm:
+            return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class="error-msg">Usuario ya existe</div>'
+        adm[u]={"password_hash":hash_password(p),"status":"pendiente","role":"user","email":e}
+        sv_admin(adm)
+        return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" style="background:#1A3111;border:1px solid #5A1A1A"><b>Registro enviado. Espera aprobación.</b></div>'
+    return login_page()
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+@app.route("/")
+def home():
+    if "user" not in session:
+        return redirect("/login")
+    return ixt()
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
 
 
            
