@@ -488,10 +488,48 @@ def ca2():
  b+=detalle
  b+='<div style=margin:20px;display:flex;gap:10px;justify-content:center><a href=/cambiar class=btn-inicio>🏠 INICIO</a><a href=/historial class=btn-back>HISTORIAL</a></div>'
  return base(ti,b)
+@app.route("/admin")
+def admin_panel():
+    if session.get("role") != "admin" and session.get("u") != "admin":
+        return base("ACCESO DENEGADO","<h2>Solo admin</h2><a href='/'>Inicio</a>")
+
+    usuarios = ld_u()
+    html = "<h2>Usuarios pendientes de aprobación</h2>"
+    hay = False
+    for u in usuarios:
+        if u.get("status") == "pendiente":
+            hay = True
+            html += f"""
+            <div class=card style='border:1px solid #00FF80;padding:10px;margin:10px'>
+                {u.get('username')} - {u.get('email')} - ID:{u.get('id')}
+                <a href='/admin/aprobar/{u.get('id')}'><button style='background:#00FF80'>Aprobar</button></a>
+                <a href='/admin/rechazar/{u.get('id')}'><button style='background:#FF5555'>Rechazar</button></a>
+            </div>
+            """
+    if not hay:
+        html += "<p>No hay pendientes</p>"
+    
+    return base("PANEL ADMIN", html)
+
+@app.route("/admin/aprobar/<uid>")
+def admin_aprobar(uid):
+    usuarios = ld_u()
+    for u in usuarios:
+        if str(u.get("id")) == str(uid):
+            u["status"] = "aprobado"
+    sv_u(usuarios)
+    return redirect("/admin")
+
+@app.route("/admin/rechazar/<uid>")
+def admin_rechazar(uid):
+    usuarios = ld_u()
+    usuarios = [u for u in usuarios if str(u.get("id")) != str(uid)]
+    sv_u(usuarios)
+    return redirect("/admin")
 
 @app.route("/payment_success")
 def payment_success():
- return base("SUSCRIPCION","<div class=card style=text-align:center><b style=color:#00FF80>✅ PAGO PROCESADO EXITOSAMENTE</b><p>Tu suscripción ha sido activada. Disfruta de acceso ilimitado.</p><a href=/ class=btn-back>VOLVER AL INICIO</a></div>")
+    return base("SUSCRIPCION","<div class=card style=text-align:center><b style=col")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5002))
