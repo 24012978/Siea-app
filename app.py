@@ -136,7 +136,7 @@ h+='<b style="color:#a855f7;">SUSCRIPCION</b>'
 h+='<p>Acceso ilimitado a todas las materias.</p>'
 h+='<a href="https://wa.me/528110290152" target="_blank" style="display:block;background:#a855f7;color:white;padding:12px;border-radius:10px;text-decoration:none;font-weight:bold;">PAGAR SUSCRIPCION - $49 MXN</a>'
 h+='</div>'
- h+='<div class=foot>PLATAFORMA DE USO INTERNO Y CONTROL INSTITUCIONAL | S.I.E.A. 2026</div>'
+h+='<div class=foot>PLATAFORMA DE USO INTERNO Y CONTROL INSTITUCIONAL | S.I.E.A. 2026</div>'
  return h
 
 def base(t,b):
