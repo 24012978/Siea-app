@@ -278,7 +278,7 @@ def reg():
         adm=ld_admin()
         if u in adm:
             return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class="error-msg">Usuario ya existe</div>'
-        adm[u]={"password_hash":hash_password(p),"status":"pendiente","role":"user","email":e}
+        adm[u]={"password_hash":hash_password(p),"status":"aprobado","role":"user","email":e}
         sv_admin(adm)
         return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" style="background:#1A3111;border:1px solid #5A1A1A"><b>Registro enviado. Espera aprobación.</b></div>'
     return login_page()
