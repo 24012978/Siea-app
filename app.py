@@ -158,6 +158,8 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
 .auth h2{margin:0 0 24px;font:900 24px 'Trebuchet MS',sans-serif;color:var(--dark)}
 .legal-box{background:var(--light);padding:24px;border-left:4px solid var(--warning);border-radius:8px;margin:24px 0;font-size:13px;line-height:1.8}
 .legal-box h3{margin:0 0 12px;color:var(--dark);font:600 16px sans-serif}
+.legal-box ul{margin:12px 0;padding-left:20px}
+.legal-box li{margin:8px 0}
 label{display:block;margin:16px 0 6px;font:600 13px sans-serif;color:var(--dark)}
 input,textarea,select{
   width:100%;
@@ -234,7 +236,7 @@ textarea{resize:vertical;min-height:100px}
 .feedback.wrong{border-left-color:var(--danger);background:#fef2f2}
 .admin-panel{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:24px}
 .admin-panel h3{margin-top:0;color:var(--dark)}
-.badge-pending{background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.badge-pending{background:#fef08a;color:#854d0e;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600;margin-left:8px}
 .user-table{width:100%;border-collapse:collapse;font:14px sans-serif}
 .user-table th{
   background:var(--light);
@@ -286,7 +288,7 @@ def page(title, body, public=False):
         user = load(USERS, {}).get(session.get("user"), {})
         if user.get("role") == "admin" and not public:
             pending = len([u for u in load(PENDING_USERS, {}).values() if u.get("status") == "pendiente"])
-            links += f'<a href="/admin">Admin {f"<span class=badge-pending>{pending}</span>" if pending else ""}</a>'
+            links += f'<a href="/admin">Admin{f"<span class=badge-pending>{pending}</span>" if pending else ""}</a>'
         if not public:
             links += '<a href="/progreso">Progreso</a><a href="/logout">Salir</a>'
     return f"""<!doctype html><html lang=es><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{esc(title)} | S.I.E.A.</title>{CSS}</head><body><nav class=nav><div class=brand>S.I.E.A.</div><div class=navlinks>{links}</div></nav>{body}</body></html>"""
