@@ -44,28 +44,241 @@ def wa_link(message="Hola, quiero información sobre la suscripción S.I.E.A."):
 
 
 CSS = """<style>
-:root{--ink:#12231f;--muted:#60716c;--paper:#f5f1e8;--mint:#d8f0e5;--green:#167b62;--gold:#e3a72f;--red:#b94b45}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px Georgia,serif}a{color:inherit}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:18px max(5vw,20px);background:#12231f;color:white}.brand{font:900 25px Trebuchet MS,sans-serif;letter-spacing:3px;color:#f3c75b}.navlinks{display:flex;gap:15px;align-items:center;font:13px Trebuchet MS,sans-serif}.navlinks a{text-decoration:none}
-.button{display:inline-block;border:0;border-radius:6px;background:var(--green);color:white;padding:12px 17px;text-decoration:none;font:700 13px Trebuchet MS,sans-serif;cursor:pointer}.gold{background:var(--gold);color:#30220c}.danger{background:#f4d7d2;color:#8e352f}
-.wrap{max-width:1100px;margin:auto;padding:28px 20px}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:35px;align-items:center;padding:65px 0 50px}.hero h1{font:900 clamp(40px,6vw,75px) Trebuchet MS,sans-serif;line-height:.96;margin:10px 0 20px}.hero p{color:var(--muted);font-size:18px;line-height:1.5}.hero-art{min-height:330px;border-radius:14px;background:linear-gradient(135deg,rgba(18,35,31,.05),rgba(22,123,98,.28)),url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80') center/cover;box-shadow:18px 18px 0 #d7e6d8}
-.section{padding:42px 0;border-top:1px solid #d8ddd4}.section h2,.panel h2{font:900 28px Trebuchet MS,sans-serif;margin:0 0 18px}.feature-grid,.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.feature,.panel{padding:22px;background:white;border:1px solid #e0e3da;border-radius:8px}.feature strong{font:700 18px Trebuchet MS,sans-serif;color:var(--green)}.feature p,.muted{line-height:1.45;color:var(--muted)}.legal{background:#e8eee5;padding:22px;line-height:1.5;color:#52635e}
-.auth{max-width:430px;margin:35px auto;background:white;padding:28px;border-radius:8px;border-top:5px solid var(--green)}label{display:block;margin:12px 0 5px;font:700 12px Trebuchet MS,sans-serif;color:var(--green)}input,select,textarea{width:100%;padding:12px;border:1px solid #c6d4ca;border-radius:5px;background:#fbfcf8;color:var(--ink);font:15px Georgia,serif}.auth .button{width:100%;margin-top:15px}.notice{padding:12px;background:#fff5d9;border-left:4px solid var(--gold);margin:12px 0}.error{background:#f8dedb;border-left-color:var(--red)}
-.page-title{background:var(--mint);padding:30px max(5vw,20px);border-bottom:1px solid #c7dfd3}.page-title h1{font:900 36px Trebuchet MS,sans-serif;margin:0}.subject-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.subject{padding:18px;border-left:5px solid var(--green);background:#f9fbf7;border-radius:5px}.subject h3{font:700 19px Trebuchet MS,sans-serif;margin:0 0 8px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.question{padding:16px;border:1px solid #dce4dc;border-left:4px solid var(--green);margin:12px 0;border-radius:5px}.stat{background:#12231f;color:white;padding:18px;border-radius:7px}.stat b{display:block;font:900 30px Trebuchet MS,sans-serif;color:#f3c75b}.answer{display:block;padding:12px;margin:8px 0;border-radius:5px;background:#f3f5f0}.correct{background:#d9f2df;border:1px solid #74ba88}.wrong{background:#f8d9d5;border:1px solid #cf766d}footer{text-align:center;padding:25px;color:var(--muted);font:12px Trebuchet MS,sans-serif}
-@media(max-width:700px){.hero{grid-template-columns:1fr;padding-top:35px}.hero-art{min-height:220px}.feature-grid,.stats{grid-template-columns:1fr}.nav{align-items:flex-start}.navlinks{gap:8px;flex-wrap:wrap;justify-content:flex-end}.form-row{grid-template-columns:1fr}}
+:root{
+  --primary:#2563eb;
+  --primary-dark:#1e40af;
+  --primary-light:#3b82f6;
+  --secondary:#7c3aed;
+  --success:#10b981;
+  --danger:#ef4444;
+  --warning:#f59e0b;
+  --dark:#1f2937;
+  --light:#f9fafb;
+  --gray:#6b7280;
+  --border:#e5e7eb;
+  --paper:#ffffff;
+  --ink:#1f2937
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--light);
+  color:var(--ink);
+  font:15px 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  line-height:1.6
+}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px max(5vw,20px);
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+  color:white;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1)
+}
+.brand{
+  font:900 24px 'Trebuchet MS',sans-serif;
+  letter-spacing:2px;
+  color:white
+}
+.navlinks{display:flex;gap:20px;align-items:center}
+.navlinks a{color:white;font:600 14px sans-serif;padding:8px 12px;border-radius:4px;transition:all 0.3s}
+.navlinks a:hover{background:rgba(255,255,255,0.2)}
+.button{
+  display:inline-block;
+  border:0;
+  border-radius:6px;
+  background:var(--primary);
+  color:white;
+  padding:12px 24px;
+  text-decoration:none;
+  font:600 14px sans-serif;
+  cursor:pointer;
+  transition:all 0.3s;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1)
+}
+.button:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+.button.secondary{background:var(--secondary)}
+.button.secondary:hover{background:#6d28d9}
+.button.success{background:var(--success)}
+.button.success:hover{background:#059669}
+.button.danger{background:var(--danger)}
+.button.danger:hover{background:#dc2626}
+.button.small{padding:8px 16px;font-size:13px}
+.button-group{display:flex;gap:10px;flex-wrap:wrap}
+.wrap{max-width:1200px;margin:auto;padding:28px 20px}
+.hero{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:35px;
+  align-items:center;
+  padding:65px 0 50px
+}
+.hero h1{
+  font:900 clamp(40px,6vw,75px) 'Trebuchet MS',sans-serif;
+  margin:0 0 16px;
+  color:var(--dark)
+}
+.hero p{font:500 18px sans-serif;margin:0 0 24px;color:var(--gray)}
+.hero-art{background:linear-gradient(135deg,var(--primary-light),var(--secondary));border-radius:12px;min-height:300px}
+.section,.panel{padding:42px 0;border-top:1px solid var(--border)}
+.section h2,.panel h2{
+  font:900 28px 'Trebuchet MS',sans-serif;
+  margin:0 0 24px;
+  color:var(--dark)
+}
+.feature-grid,.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px
+}
+.feature-item,.stat{
+  background:var(--paper);
+  padding:24px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  transition:all 0.3s
+}
+.feature-item:hover,.stat:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,0.1)}
+.feature-item h3{margin:0 0 12px;color:var(--primary);font:600 18px sans-serif}
+.stat b{display:block;font:900 32px sans-serif;color:var(--primary);margin-bottom:8px}
+.auth{
+  max-width:450px;
+  margin:35px auto;
+  background:var(--paper);
+  padding:36px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,0.08)
+}
+.auth h2{margin:0 0 24px;font:900 24px 'Trebuchet MS',sans-serif;color:var(--dark)}
+label{display:block;margin:16px 0 6px;font:600 13px sans-serif;color:var(--dark)}
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font:14px sans-serif;
+  margin-bottom:12px;
+  transition:all 0.3s;
+  font-family:'Segoe UI',sans-serif
+}
+input:focus,textarea:focus,select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(37,99,235,0.1)
+}
+textarea{resize:vertical;min-height:100px}
+.notice{
+  padding:16px;
+  border-radius:6px;
+  margin-bottom:16px;
+  font:600 14px sans-serif
+}
+.notice.error{background:#fee;color:#c33;border:1px solid #f88}
+.notice.success{background:#efe;color:#3a3;border:1px solid #8f8}
+.notice.info{background:#eef;color:#33a;border:1px solid #88f}
+.page-title{
+  background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%);
+  padding:30px max(5vw,20px);
+  border-bottom:1px solid var(--border)
+}
+.page-title h1{
+  font:900 36px 'Trebuchet MS',sans-serif;
+  margin:0;
+  color:var(--dark)
+}
+.page-title p{margin:8px 0 0;color:var(--gray)}
+.subject-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+  margin-top:24px
+}
+.subject{
+  background:var(--paper);
+  padding:24px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  transition:all 0.3s
+}
+.subject:hover{transform:translateY(-4px);box-shadow:0 8px 16px rgba(0,0,0,0.1);border-color:var(--primary)}
+.subject h3{margin:0 0 12px;font:600 18px sans-serif;color:var(--dark)}
+.subject p{margin:0 0 16px;color:var(--gray);font-size:14px}
+.question{
+  background:var(--paper);
+  padding:20px;
+  border-radius:8px;
+  border-left:4px solid var(--primary);
+  margin-bottom:16px;
+  transition:all 0.3s
+}
+.question:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.question b{display:block;margin-bottom:8px;font-size:16px;color:var(--dark)}
+.question p{margin:0;color:var(--gray);font-size:13px}
+.muted{color:var(--gray);font-size:14px}
+.answer{display:flex;align-items:center;padding:12px;border-radius:6px;margin:8px 0;cursor:pointer;border:1px solid var(--border);transition:all 0.3s}
+.answer:hover{background:#f0f9ff;border-color:var(--primary)}
+.answer input{width:auto;margin:0 12px 0 0}
+.answer.correct{background:#ecfdf5;border-color:var(--success);color:var(--success)}
+.answer.wrong{background:#fef2f2;border-color:var(--danger);color:var(--danger)}
+.admin-panel{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:24px}
+.admin-panel h3{margin-top:0;color:var(--dark)}
+.user-table{width:100%;border-collapse:collapse;font:14px sans-serif}
+.user-table th{
+  background:var(--light);
+  padding:12px;
+  text-align:left;
+  border-bottom:2px solid var(--border);
+  font:600 13px sans-serif;
+  color:var(--dark)
+}
+.user-table td{
+  padding:12px;
+  border-bottom:1px solid var(--border)
+}
+.user-table tr:hover{background:var(--light)}
+.status-badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:20px;
+  font:600 12px sans-serif;
+  text-transform:uppercase
+}
+.status-badge.pending{background:#fef08a;color:#854d0e}
+.status-badge.aprobado{background:#dcfce7;color:#166534}
+.status-badge.rechazado{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){
+  .hero{grid-template-columns:1fr;padding-top:35px}
+  .hero-art{min-height:220px}
+  .feature-grid,.stats{grid-template-columns:1fr}
+  .nav{align-items:flex-start;flex-direction:column}
+  .navlinks{gap:8px;flex-direction:column;width:100%}
+  .form-row{grid-template-columns:1fr}
+  .user-table{font-size:12px}
+  .user-table th,.user-table td{padding:8px}
+}
 </style>"""
 
 
 def page(title, body, public=False):
     links = '<a href="/">Inicio</a>'
-    if session.get("user") and not public:
-        links += '<a href="/progreso">Progreso</a><a href="/logout">Salir</a>'
-    return f"<!doctype html><html lang=es><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{esc(title)} | S.I.E.A.</title>{CSS}</head><body><nav class=nav><a class=brand href='/'>S.I.E.A.</a><div class=navlinks>{links}</div></nav>{body}<footer>S.I.E.A. | Estudio, evaluación y progreso académico<br>Uso educativo. Información personal tratada de forma confidencial.</footer></body></html>"
+    if session.get("user"):
+        user = load(USERS, {}).get(session.get("user"), {})
+        if user.get("role") == "admin" and not public:
+            links += '<a href="/admin">Admin</a>'
+        if not public:
+            links += '<a href="/progreso">Progreso</a><a href="/logout">Salir</a>'
+    return f"""<!doctype html><html lang=es><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{esc(title)} | S.I.E.A.</title>{CSS}</head><body><nav class=nav><div class=brand>S.I.E.A.</div><div class=navlinks>{links}</div></nav>{body}</body></html>"""
 
 
 def landing(message=""):
-    alert = f'<div class="wrap"><div class="notice">{esc(message)}</div></div>' if message else ""
-    body = f'''{alert}<main class=wrap><section class=hero><div><p style="color:var(--green);font:700 13px Trebuchet MS,sans-serif;letter-spacing:2px">APRENDE CON DIRECCIÓN</p><h1>Convierte tus preguntas en progreso.</h1><p>Organiza tu banco de estudio por materia, practica con exámenes y descubre exactamente qué necesitas reforzar.</p><a class=button href=/login>Comenzar a estudiar</a></div><div class=hero-art aria-label="Persona estudiando"></div></section><section class=section><h2>Todo lo que necesitas para avanzar</h2><div class=feature-grid><article class=feature><strong>Materias claras</strong><p>Crea una colección independiente para cada tema y mantén tus reactivos ordenados.</p></article><article class=feature><strong>Exámenes reales</strong><p>Practica por materia para medir tu preparación de forma completa.</p></article><article class=feature><strong>Retroalimentación</strong><p>Al terminar verás respuestas correctas e incorrectas diferenciadas por color.</p></article></div></section><section class=section><h2>Un espacio hecho para estudiar mejor</h2><p class=muted>Registra tus avances, revisa tu historial y vuelve a las preguntas que más trabajo te dieron desde móvil o computadora.</p><div class=legal><b>Marco legal y privacidad</b><br>El acceso es personal e intransferible. S.I.E.A. debe utilizarse con fines educativos y respetando la normativa aplicable de protección de datos. Al registrarte aceptas el tratamiento de la información necesaria para operar tu cuenta y generar tus estadísticas.</div></section></main>'''
+    alert = f'<div class="wrap"><div class="notice info">{esc(message)}</div></div>' if message else ""
+    body = f"""{alert}<main class=wrap><section class=hero><div><p style="color:var(--primary);font:700 13px 'Trebuchet MS',sans-serif;letter-spacing:2px">APRENDE CON DIRECCIÓN</p><h1>Convierte tus preguntas en exámenes</h1><p>Sistema Inteligente de Estudio Adaptativo - Estudia de forma más eficiente con preguntas y exámenes personalizados</p><div class=button-group><a class=button href="/login">Ingresar</a><a class="button secondary" href="/registro">Crear cuenta</a></div></div><div class=hero-art></div></section></main>"""
     return page("Estudio inteligente", body, True)
 
 
@@ -82,16 +295,16 @@ def home():
     subjects = {}
     for question in questions:
         subjects.setdefault(question["materia"], []).append(question)
-    cards = "".join(f'<article class=subject><h3>{esc(name)}</h3><p>{len(items)} pregunta(s) guardada(s)</p><a class=button href="/materia/{quote(name)}">Abrir materia</a></article>' for name, items in sorted(subjects.items())) or '<p class=muted>Aún no tienes materias. Crea la primera para comenzar.</p>'
+    cards = "".join(f'<article class=subject><h3>{esc(name)}</h3><p>{len(items)} pregunta(s) guardada(s)</p><a class=button href="/materia/{quote(name)}">Abrir materia</a></article>' for name, items in sorted(subjects.items()))
     options = ''.join(f'<option value="{esc(name)}">{esc(name)}</option>' for name in sorted(subjects))
-    exam_form = f'<form method=post action=/exam><label>Examen por materia</label><select name=materia required>{options}</select><button class=button type=submit>Iniciar examen</button></form>' if options else '<p class=muted>Agrega preguntas para habilitar los exámenes.</p>'
-    body = f'''<div class=page-title><div class=wrap><h1>Hola, {esc(session.get("user"))}</h1><p>Tu escritorio de estudio</p></div></div><main class=wrap><section class=panel><h2>Nueva materia</h2><form method=post action=/materia><div class=form-row><input name=materia placeholder="Ej. Derecho administrativo" required><button class="button gold" type=submit>Crear materia</button></div></form></section><section class=panel><h2>Mis materias</h2><div class=subject-grid>{cards}</div></section><section class=panel><h2>Practicar</h2>{exam_form}<p><a href=/progreso>Ver mi progreso e historial</a></p></section><section class=panel><h2>Suscripción</h2><p class=muted>Solicita información y activa tu acceso directamente por WhatsApp.</p><a class="button gold" target=_blank rel=noopener href="{wa_link()}">Pagar suscripción</a> <span class=muted>{PHONE_DISPLAY}</span></section></main>'''
+    exam_form = f'<form method=post action=/exam><label>Examen por materia</label><select name=materia required>{options}</select><button class="button success" type=submit>Iniciar examen</button></form>' if subjects else ""
+    body = f"""<div class=page-title><div class=wrap><h1>Hola, {esc(session.get("user"))}</h1><p>Tu escritorio de estudio inteligente</p></div></div><main class=wrap><section class=panel><h2>Agregar nueva materia</h2><form method=post action=/materia><input type=text name=materia placeholder="Ej: Matemáticas, Biología" required><button class="button primary" type=submit>Crear materia</button></form></section><section class=panel>{exam_form}<h2>Mis materias</h2><div class=subject-grid>{cards if cards else '<p class=muted>Aún no tienes materias. ¡Crea una para comenzar!</p>'}</div></section></main>"""
     return page("Panel de estudio", body)
 
 
 def auth(message=""):
     note = f'<div class="notice error">{esc(message)}</div>' if message else ""
-    body = f'<main class=wrap><div class=auth><h2>Acceso de estudiante</h2>{note}<form method=post><label>Usuario</label><input name=user required><label>Contraseña</label><input type=password name=password required><button class=button type=submit>Ingresar</button></form><p class=muted>¿No tienes cuenta? <a href=/registro>Regístrate aquí</a></p></div></main>'
+    body = f"""<main class=wrap><div class=auth><h2>Acceso de estudiante</h2>{note}<form method=post><label>Usuario</label><input name=user required><label>Contraseña</label><input type=password name=password required><button class="button primary" type=submit>Ingresar</button></form><p class=muted>¿No tienes cuenta? <a href="/registro">Regístrate aquí</a></p></div></main>"""
     return page("Ingresar", body, True)
 
 
@@ -102,8 +315,10 @@ def login():
         user = load(USERS, {}).get(username)
         if not user or user.get("password_hash") != password_hash(request.form.get("password", "")):
             return auth("Usuario o contraseña incorrectos.")
-        if user.get("status", "aprobado") != "aprobado":
-            return auth("Tu cuenta está pendiente de aprobación.")
+        if user.get("status", "aprobado") == "pendiente":
+            return auth("Tu cuenta está pendiente de aprobación del administrador.")
+        if user.get("status", "aprobado") == "rechazado":
+            return auth("Tu cuenta ha sido rechazada.")
         session["user"] = username
         return redirect("/")
     return auth()
@@ -117,15 +332,22 @@ def register():
         users = load(USERS, {})
         if not username or len(password) < 6 or username in users:
             return registration("Usuario existente o contraseña menor a 6 caracteres.")
-        users[username] = {"full_name": request.form.get("name", "").strip(), "email": request.form.get("email", "").strip(), "password_hash": password_hash(password), "status": "aprobado", "role": "user", "created_at": datetime.now().isoformat()}
+        users[username] = {
+            "full_name": request.form.get("name", "").strip(),
+            "email": request.form.get("email", "").strip(),
+            "password_hash": password_hash(password),
+            "status": "pendiente",
+            "role": "student",
+            "created_at": datetime.now().strftime("%d/%m/%Y %H:%M")
+        }
         save(USERS, users)
-        return auth("Cuenta creada. Ya puedes ingresar.")
+        return registration("✓ Cuenta creada. Espera la aprobación del administrador para ingresar.")
     return registration()
 
 
 def registration(message=""):
-    note = f'<div class="notice error">{esc(message)}</div>' if message else ""
-    body = f'<main class=wrap><div class=auth><h2>Crear cuenta</h2>{note}<form method=post><label>Usuario</label><input name=user required><label>Nombre completo</label><input name=name required><label>Correo</label><input type=email name=email required><label>Contraseña</label><input type=password name=password minlength=6 required><button class=button type=submit>Registrarme</button></form><p><a href=/login>Volver a ingresar</a></p></div></main>'
+    note = f'<div class="notice info">{esc(message)}</div>' if message else ""
+    body = f"""<main class=wrap><div class=auth><h2>Crear cuenta</h2>{note}<form method=post><label>Usuario</label><input name=user placeholder="Tu nombre de usuario" required><label>Nombre completo</label><input name=name placeholder="Nombre y apellido" required><label>Correo</label><input type=email name=email placeholder="tu@correo.com" required><label>Contraseña</label><input type=password name=password placeholder="Mínimo 6 caracteres" required><button class="button primary" type=submit>Crear cuenta</button></form><p class=muted>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p></div></main>"""
     return page("Registro", body, True)
 
 
@@ -133,6 +355,103 @@ def registration(message=""):
 def logout():
     session.clear()
     return redirect("/")
+
+
+@app.route("/admin")
+def admin_panel():
+    user = load(USERS, {}).get(session.get("user"), {})
+    if user.get("role") != "admin":
+        return redirect("/")
+    
+    users = load(USERS, {})
+    pending_users = [{"username": k, **v} for k, v in users.items() if v.get("status") == "pendiente"]
+    all_users = [{"username": k, **v} for k, v in users.items()]
+    
+    pending_rows = "".join(f"""
+    <tr>
+        <td>{esc(u['username'])}</td>
+        <td>{esc(u.get('full_name', ''))}</td>
+        <td>{esc(u.get('email', ''))}</td>
+        <td>{u.get('created_at', '')}</td>
+        <td>
+            <div class=actions>
+                <form method=post action=/admin/approve style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button success small" type=submit>Aprobar</button></form>
+                <form method=post action=/admin/reject style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button danger small" type=submit>Rechazar</button></form>
+            </div>
+        </td>
+    </tr>
+    """ for u in pending_users)
+    
+    all_rows = "".join(f"""
+    <tr>
+        <td>{esc(u['username'])}</td>
+        <td>{esc(u.get('full_name', ''))}</td>
+        <td>{esc(u.get('email', ''))}</td>
+        <td><span class="status-badge {u.get('status')}">{u.get('status', 'aprobado')}</span></td>
+        <td>{u.get('role', 'student')}</td>
+        <td>{u.get('created_at', '')}</td>
+    </tr>
+    """ for u in all_users)
+    
+    body = f"""<div class=page-title><div class=wrap><h1>Panel de Administrador</h1><p>Gestión de usuarios y aprobaciones</p></div></div><main class=wrap>
+    <section class=panel>
+        <div class=admin-panel>
+            <h3>✓ Usuarios Pendientes de Aprobación ({len(pending_users)})</h3>
+            {f'<table class=user-table><thead><tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Fecha de Registro</th><th>Acciones</th></tr></thead><tbody>{pending_rows}</tbody></table>' if pending_users else '<p class=muted>No hay usuarios pendientes</p>'}
+        </div>
+    </section>
+    
+    <section class=panel>
+        <div class=admin-panel>
+            <h3>Todos los usuarios ({len(all_users)})</h3>
+            <table class=user-table>
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Estado</th>
+                        <th>Rol</th>
+                        <th>Fecha de Registro</th>
+                    </tr>
+                </thead>
+                <tbody>{all_rows}</tbody>
+            </table>
+        </div>
+    </section>
+    </main>"""
+    
+    return page("Panel de Administrador", body)
+
+
+@app.route("/admin/approve", methods=["POST"])
+def admin_approve():
+    user = load(USERS, {}).get(session.get("user"), {})
+    if user.get("role") != "admin":
+        return redirect("/")
+    
+    username = request.form.get("username", "").upper()
+    users = load(USERS, {})
+    if username in users:
+        users[username]["status"] = "aprobado"
+        save(USERS, users)
+    
+    return redirect("/admin")
+
+
+@app.route("/admin/reject", methods=["POST"])
+def admin_reject():
+    user = load(USERS, {}).get(session.get("user"), {})
+    if user.get("role") != "admin":
+        return redirect("/")
+    
+    username = request.form.get("username", "").upper()
+    users = load(USERS, {})
+    if username in users:
+        users[username]["status"] = "rechazado"
+        save(USERS, users)
+    
+    return redirect("/admin")
 
 
 @app.route("/materia", methods=["POST"])
@@ -149,8 +468,8 @@ def add_subject():
 @app.route("/materia/<path:name>")
 def subject(name):
     questions = [q for q in questions_for_user() if q.get("materia") == name and not q.get("placeholder")]
-    rows = "".join(f'<article class=question><b>{esc(q["p"])}</b><p class=muted>A) {esc(q["op"][0])} &nbsp; B) {esc(q["op"][1])} &nbsp; C) {esc(q["op"][2])} &nbsp; D) {esc(q["op"][3])}</p><a class=button href="/pregunta/{q["id"]}">Editar</a> <a class="button danger" href="/pregunta/{q["id"]}/eliminar">Eliminar</a></article>' for q in questions) or '<p class=muted>Aún no hay preguntas en esta materia.</p>'
-    body = f'''<div class=page-title><div class=wrap><h1>{esc(name)}</h1><p>{len(questions)} pregunta(s)</p></div></div><main class=wrap><section class=panel><h2>Agregar pregunta</h2><form method=post action=/pregunta><input type=hidden name=materia value="{esc(name)}"><label>Enunciado</label><textarea name=p rows=3 required></textarea><div class=form-row><div><label>Opción A</label><input name=o1 required><label>Opción C</label><input name=o3 required></div><div><label>Opción B</label><input name=o2 required><label>Opción D</label><input name=o4 required></div></div><label>Respuesta correcta</label><select name=co><option value=0>A</option><option value=1>B</option><option value=2>C</option><option value=3>D</option></select><br><br><button class=button type=submit>Guardar pregunta</button></form></section><section class=panel><h2>Banco de preguntas</h2>{rows}</section></main>'''
+    rows = "".join(f'<article class=question><b>{esc(q["p"])}</b><p class=muted>A) {esc(q["op"][0])} &nbsp; B) {esc(q["op"][1])} &nbsp; C) {esc(q["op"][2])} &nbsp; D) {esc(q["op"][3])}</p><a class="button small" href="/pregunta/{q["id"]}">Editar</a> <a class="button danger small" href="/pregunta/{q["id"]}/eliminar">Eliminar</a></article>' for q in questions)
+    body = f"""<div class=page-title><div class=wrap><h1>{esc(name)}</h1><p>{len(questions)} pregunta(s)</p></div></div><main class=wrap><section class=panel><h2>Agregar pregunta</h2><form method=post action=/pregunta><input type=hidden name=materia value="{esc(name)}"><label>Enunciado de la pregunta</label><textarea name=p required></textarea><label>Opción A</label><input name=o1 required><label>Opción B</label><input name=o2 required><label>Opción C</label><input name=o3 required><label>Opción D</label><input name=o4 required><label>Respuesta correcta</label><select name=co required><option value="">Selecciona la correcta</option><option value=0>A</option><option value=1>B</option><option value=2>C</option><option value=3>D</option></select><button class="button success" type=submit>Agregar pregunta</button></form></section><section class=panel><h2>Preguntas guardadas</h2>{rows if rows else '<p class=muted>Aún no hay preguntas en esta materia</p>'}</section></main>"""
     return page(name, body)
 
 
@@ -174,9 +493,9 @@ def edit_question(qid):
         question.update(p=request.form["p"].strip(), op=[request.form[f"o{i}"].strip() for i in range(1, 5)], co=int(request.form["co"]))
         save(DB, data)
         return redirect("/materia/" + quote(question["materia"]))
-    fields = ''.join(f'<div><label>Opción {chr(65+i)}</label><input name=o{i+1} value="{esc(question["op"][i])}" required></div>' for i in range(4))
+    fields = ''.join(f'<div class=form-group><label>Opción {chr(65+i)}</label><input name=o{i+1} value="{esc(question["op"][i])}" required></div>' for i in range(4))
     options = ''.join(f'<option value={i} {"selected" if i == question["co"] else ""}>{chr(65+i)}</option>' for i in range(4))
-    body = f'<main class=wrap><section class=panel><h2>Editar pregunta</h2><form method=post><label>Enunciado</label><textarea name=p rows=3 required>{esc(question["p"])}</textarea><div class=form-row>{fields}</div><label>Respuesta correcta</label><select name=co>{options}</select><br><br><button class=button type=submit>Guardar cambios</button></form></section></main>'
+    body = f'<main class=wrap><section class=panel><h2>Editar pregunta</h2><form method=post><label>Enunciado</label><textarea name=p rows=3 required>{esc(question["p"])}</textarea>{fields}<label>Respuesta correcta</label><select name=co required>{options}</select><div class=button-group><button class="button success" type=submit>Guardar cambios</button><a class=button href="/materia/{quote(question["materia"])}">Cancelar</a></div></form></section></main>'
     return page("Editar pregunta", body)
 
 
@@ -204,7 +523,7 @@ def exam():
     for index, question in enumerate(questions, 1):
         choices = ''.join(f'<label class=answer><input type=radio name="answer_{question["id"]}" value={j} required> {chr(65+j)}) {esc(option)}</label>' for j, option in enumerate(question["op"]))
         blocks.append(f'<div class=question><p><b>{index}. {esc(question["p"])}</b></p>{choices}</div>')
-    body = f'<main class=wrap><section class=panel><h1>Examen: {esc(info["materia"])}</h1><form method=post action=/exam/submit>{"".join(blocks)}<button class="button gold" type=submit>Terminar y revisar respuestas</button></form></section></main>'
+    body = f'<main class=wrap><section class=panel><h1>Examen: {esc(info["materia"])}</h1><form method=post action=/exam/submit>{"".join(blocks)}<div class=button-group><button class="button success" type=submit>Terminar y enviar examen</button><a class=button href="/">Cancelar</a></div></form></section></main>'
     return page("Examen", body)
 
 
@@ -216,8 +535,9 @@ def submit_exam():
     correct = sum(answers[q["id"]] == q["co"] for q in questions)
     result = {"usuario": session["user"], "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"), "materia": info.get("materia", ""), "correctas": correct, "total": len(questions)}
     history = load(HISTORY, []); history.append(result); save(HISTORY, history)
+    percentage = int((correct / len(questions)) * 100) if questions else 0
     rows = ''.join(f'<div class="answer {"correct" if answers[q["id"]] == q["co"] else "wrong"}"><b>{i}. {esc(q["p"])}</b><br>Tu respuesta: {chr(65+answers[q["id"]])} | Respuesta correcta: {chr(65+q["co"])}</div>' for i, q in enumerate(questions, 1))
-    return page("Resultado", f'<main class=wrap><section class=panel><h1>Resultado: {correct}/{len(questions)}</h1><p class=muted>Verde = correcta · Rojo = incorrecta</p>{rows}<a class=button href=/>Volver al panel</a></section></main>')
+    return page("Resultado", f'<main class=wrap><section class=panel><h1>Resultado: {correct}/{len(questions)} ({percentage}%)</h1><p class=muted>🟢 Verde = correcta · 🔴 Rojo = incorrecta</p>{rows}<div class=button-group><a class="button success" href="/">Volver al inicio</a><a class=button href="/progreso">Ver progreso</a></div></section></main>')
 
 
 @app.route("/progreso")
@@ -225,8 +545,9 @@ def progress():
     history = [x for x in load(HISTORY, []) if x.get("usuario") == session["user"]]
     total = sum(x.get("total", 0) for x in history)
     correct = sum(x.get("correctas", 0) for x in history)
-    rows = ''.join(f'<tr><td>{esc(x["fecha"])}</td><td>{esc(x["materia"])}</td><td>{x["correctas"]}/{x["total"]}</td></tr>' for x in reversed(history)) or '<tr><td colspan=3>Aún no hay exámenes realizados.</td></tr>'
-    body = f'<main class=wrap><h1>Mi progreso</h1><div class=stats><div class=stat><b>{len(history)}</b>Exámenes</div><div class=stat><b>{correct}</b>Respuestas correctas</div><div class=stat><b>{round(correct/total*100) if total else 0}%</b>Precisión</div></div><section class=panel><h2>Historial</h2><table width=100% cellpadding=10><tr><th>Fecha</th><th>Materia</th><th>Resultado</th></tr>{rows}</table></section></main>'
+    rows = ''.join(f'<tr><td>{esc(x["fecha"])}</td><td>{esc(x["materia"])}</td><td>{x["correctas"]}/{x["total"]}</td></tr>' for x in reversed(history)) or '<tr><td colspan=3 class=muted>Aún no hay exámenes realizados</td></tr>'
+    percentage = int((correct / total) * 100) if total else 0
+    body = f'<main class=wrap><h1>Mi progreso</h1><div class=stats><div class=stat><b>{len(history)}</b>Exámenes realizados</div><div class=stat><b>{correct}</b>Respuestas correctas</div><div class=stat><b>{percentage}%</b>Promedio de aciertos</div></div><section class=panel><h2>Historial de exámenes</h2><table class=user-table><thead><tr><th>Fecha</th><th>Materia</th><th>Resultado</th></tr></thead><tbody>{rows}</tbody></table></section></main>'
     return page("Progreso", body)
 
 
