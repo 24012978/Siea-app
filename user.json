@@ -1,10 +1,10 @@
 {
-  "NARZ": {
-    "full_name": "Administrador Narz",
-    "email": "narz@siea.edu.mx",
-    "password_hash": "34eb03c85ffa98d5e0a02db4e6b6ef84f15f7c3c5b7e5d3c8f1a9b6e4c2d5f8a",
+  "ADMIN": {
+    "full_name": "Administrador SIEA",
+    "email": "admin@siea.edu.mx",
+    "password_hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
     "status": "aprobado",
     "role": "admin",
-    "created_at": "21/08/2026 02:15"
+    "created_at": "04/09/2026 12:00"
   }
 }
