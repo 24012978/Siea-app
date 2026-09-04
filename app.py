@@ -13,6 +13,7 @@ app.secret_key = os.environ.get("SIEA_SECRET_KEY", "siea-change-this-secret")
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(ROOT, "preguntas.json")
 HISTORY = os.path.join(ROOT, "historial.json")
+PENDING_USERS = os.path.join(ROOT, "pending_users.json")
 USERS = os.path.join(ROOT, "user.json")
 PHONE = "528110290152"
 PHONE_DISPLAY = "+52 811 029 0152"
@@ -82,7 +83,7 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
   letter-spacing:2px;
   color:white
 }
-.navlinks{display:flex;gap:20px;align-items:center}
+.navlinks{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 .navlinks a{color:white;font:600 14px sans-serif;padding:8px 12px;border-radius:4px;transition:all 0.3s}
 .navlinks a:hover{background:rgba(255,255,255,0.2)}
 .button{
@@ -105,6 +106,8 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
 .button.success:hover{background:#059669}
 .button.danger{background:var(--danger)}
 .button.danger:hover{background:#dc2626}
+.button.warning{background:var(--warning)}
+.button.warning:hover{background:#d97706}
 .button.small{padding:8px 16px;font-size:13px}
 .button-group{display:flex;gap:10px;flex-wrap:wrap}
 .wrap{max-width:1200px;margin:auto;padding:28px 20px}
@@ -153,6 +156,8 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
   box-shadow:0 4px 16px rgba(0,0,0,0.08)
 }
 .auth h2{margin:0 0 24px;font:900 24px 'Trebuchet MS',sans-serif;color:var(--dark)}
+.legal-box{background:var(--light);padding:24px;border-left:4px solid var(--warning);border-radius:8px;margin:24px 0;font-size:13px;line-height:1.8}
+.legal-box h3{margin:0 0 12px;color:var(--dark);font:600 16px sans-serif}
 label{display:block;margin:16px 0 6px;font:600 13px sans-serif;color:var(--dark)}
 input,textarea,select{
   width:100%;
@@ -179,6 +184,7 @@ textarea{resize:vertical;min-height:100px}
 .notice.error{background:#fee;color:#c33;border:1px solid #f88}
 .notice.success{background:#efe;color:#3a3;border:1px solid #8f8}
 .notice.info{background:#eef;color:#33a;border:1px solid #88f}
+.notice.warning{background:#fef08a;color:#854d0e;border:1px solid #fde047}
 .page-title{
   background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%);
   padding:30px max(5vw,20px);
@@ -223,8 +229,12 @@ textarea{resize:vertical;min-height:100px}
 .answer input{width:auto;margin:0 12px 0 0}
 .answer.correct{background:#ecfdf5;border-color:var(--success);color:var(--success)}
 .answer.wrong{background:#fef2f2;border-color:var(--danger);color:var(--danger)}
+.feedback{background:var(--paper);padding:16px;border-radius:8px;border-left:4px solid var(--primary);margin:12px 0}
+.feedback.correct{border-left-color:var(--success);background:#f0fdf4}
+.feedback.wrong{border-left-color:var(--danger);background:#fef2f2}
 .admin-panel{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:24px}
 .admin-panel h3{margin-top:0;color:var(--dark)}
+.badge-pending{background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
 .user-table{width:100%;border-collapse:collapse;font:14px sans-serif}
 .user-table th{
   background:var(--light);
@@ -252,6 +262,11 @@ textarea{resize:vertical;min-height:100px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .form-group{margin-bottom:16px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.progress-bar{width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:var(--primary);transition:width 0.3s}
+.progress-fill.success{background:var(--success)}
+.progress-fill.warning{background:var(--warning)}
+.progress-fill.danger{background:var(--danger)}
 @media(max-width:700px){
   .hero{grid-template-columns:1fr;padding-top:35px}
   .hero-art{min-height:220px}
@@ -270,7 +285,8 @@ def page(title, body, public=False):
     if session.get("user"):
         user = load(USERS, {}).get(session.get("user"), {})
         if user.get("role") == "admin" and not public:
-            links += '<a href="/admin">Admin</a>'
+            pending = len([u for u in load(PENDING_USERS, {}).values() if u.get("status") == "pendiente"])
+            links += f'<a href="/admin">Admin {f"<span class=badge-pending>{pending}</span>" if pending else ""}</a>'
         if not public:
             links += '<a href="/progreso">Progreso</a><a href="/logout">Salir</a>'
     return f"""<!doctype html><html lang=es><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>{esc(title)} | S.I.E.A.</title>{CSS}</head><body><nav class=nav><div class=brand>S.I.E.A.</div><div class=navlinks>{links}</div></nav>{body}</body></html>"""
@@ -278,7 +294,76 @@ def page(title, body, public=False):
 
 def landing(message=""):
     alert = f'<div class="wrap"><div class="notice info">{esc(message)}</div></div>' if message else ""
-    body = f"""{alert}<main class=wrap><section class=hero><div><p style="color:var(--primary);font:700 13px 'Trebuchet MS',sans-serif;letter-spacing:2px">APRENDE CON DIRECCIÓN</p><h1>Convierte tus preguntas en exámenes</h1><p>Sistema Inteligente de Estudio Adaptativo - Estudia de forma más eficiente con preguntas y exámenes personalizados</p><div class=button-group><a class=button href="/login">Ingresar</a><a class="button secondary" href="/registro">Crear cuenta</a></div></div><div class=hero-art></div></section></main>"""
+    body = f"""{alert}
+<main class=wrap>
+<section class=hero>
+<div>
+<p style="color:var(--primary);font:700 13px 'Trebuchet MS',sans-serif;letter-spacing:2px">APRENDE CON DIRECCIÓN</p>
+<h1>Sistema Inteligente de Estudio Adaptativo</h1>
+<p>Aprende a tu propio ritmo con preguntas y exámenes personalizados. Recibe retroalimentación detallada y mejora tu desempeño académico.</p>
+<div class=button-group><a class=button href="/login">Ingresar</a><a class="button secondary" href="/registro">Crear cuenta</a></div>
+</div>
+<div class=hero-art></div>
+</section>
+
+<section class=section>
+<h2>📚 Características</h2>
+<div class=feature-grid>
+<div class=feature-item>
+<h3>Preguntas Personalizadas</h3>
+<p>Crea y organiza preguntas por materia. Estudia de forma estructurada y enfocada.</p>
+</div>
+<div class=feature-item>
+<h3>Exámenes Inteligentes</h3>
+<p>Realiza exámenes aleatorios y obtén calificaciones instantáneas con análisis detallado.</p>
+</div>
+<div class=feature-item>
+<h3>Retroalimentación Completa</h3>
+<p>Análisis por pregunta, recomendaciones de mejora y seguimiento de progreso.</p>
+</div>
+</div>
+</section>
+
+<section class=section>
+<h2>🎯 Objetivo de la Plataforma</h2>
+<div class=legal-box>
+<p><strong>S.I.E.A. (Sistema Inteligente de Estudio Adaptativo)</strong> es una plataforma educativa diseñada para facilitar el aprendizaje autodirigido y adaptativo. Nuestro objetivo es:</p>
+<ul>
+<li>Proporcionar herramientas efectivas para el estudio independiente</li>
+<li>Permitir a los docentes crear evaluaciones personalizadas</li>
+<li>Facilitar la retroalimentación inmediata para mejorar el aprendizaje</li>
+<li>Registrar y analizar el progreso académico</li>
+<li>Promover una educación inclusiva y accesible</li>
+</ul>
+</div>
+</section>
+
+<section class=section>
+<h2>⚖️ Marco Legal y Privacidad</h2>
+<div class=legal-box>
+<h3>Términos de Uso y Protección de Datos</h3>
+<p>Al utilizar esta plataforma, usted acepta que:</p>
+<ul>
+<li><strong>Responsabilidad del Contenido:</strong> Los usuarios son responsables del contenido que crean. S.I.E.A. no se responsabiliza por contenido ilícito o inapropiado.</li>
+<li><strong>Protección de Datos Personales:</strong> Sus datos personales (nombre, correo, progreso académico) se almacenan de forma segura y confidencial.</li>
+<li><strong>Uso Educativo:</strong> Esta plataforma está destinada únicamente para fines educativos legales y académicos.</li>
+<li><strong>Propiedad Intelectual:</strong> El contenido generado por usuarios permanece como propiedad del usuario, pero S.I.E.A. tiene derecho a usarlo para mejorar la plataforma.</li>
+<li><strong>Consentimiento Parental:</strong> Si eres menor de edad, tus padres o tutores deben consentir tu uso de esta plataforma.</li>
+<li><strong>Política de Moderación:</strong> S.I.E.A. se reserva el derecho de rechazar registros que no cumplan con nuestros estándares éticos y educativos.</li>
+</ul>
+</div>
+</section>
+
+<section class=section>
+<h2>📞 Contacto y Soporte</h2>
+<div class=legal-box>
+<p>Para preguntas, soporte técnico o más información sobre suscripciones:</p>
+<p><strong>WhatsApp:</strong> <a href="{wa_link()}">{PHONE_DISPLAY}</a></p>
+<p><strong>Correo:</strong> soporte@siea.edu.mx</p>
+</div>
+</section>
+</main>
+"""
     return page("Estudio inteligente", body, True)
 
 
@@ -329,10 +414,13 @@ def register():
     if request.method == "POST":
         username = request.form.get("user", "").strip().upper()
         password = request.form.get("password", "")
+        pending = load(PENDING_USERS, {})
         users = load(USERS, {})
-        if not username or len(password) < 6 or username in users:
-            return registration("Usuario existente o contraseña menor a 6 caracteres.")
-        users[username] = {
+        if not username or len(password) < 6:
+            return registration("Completa todos los campos. Contraseña mínimo 6 caracteres.")
+        if username in users or username in pending:
+            return registration("Este usuario ya existe.")
+        pending[username] = {
             "full_name": request.form.get("name", "").strip(),
             "email": request.form.get("email", "").strip(),
             "password_hash": password_hash(password),
@@ -340,13 +428,14 @@ def register():
             "role": "student",
             "created_at": datetime.now().strftime("%d/%m/%Y %H:%M")
         }
-        save(USERS, users)
-        return registration("✓ Cuenta creada. Espera la aprobación del administrador para ingresar.")
+        save(PENDING_USERS, pending)
+        return registration("✓ Solicitud enviada. Espera la aprobación del administrador.")
     return registration()
 
 
 def registration(message=""):
-    note = f'<div class="notice info">{esc(message)}</div>' if message else ""
+    msg_type = "success" if "✓" in message else "info" if "Solicitud" in message else "error"
+    note = f'<div class="notice {msg_type}">{esc(message)}</div>' if message else ""
     body = f"""<main class=wrap><div class=auth><h2>Crear cuenta</h2>{note}<form method=post><label>Usuario</label><input name=user placeholder="Tu nombre de usuario" required><label>Nombre completo</label><input name=name placeholder="Nombre y apellido" required><label>Correo</label><input type=email name=email placeholder="tu@correo.com" required><label>Contraseña</label><input type=password name=password placeholder="Mínimo 6 caracteres" required><button class="button primary" type=submit>Crear cuenta</button></form><p class=muted>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p></div></main>"""
     return page("Registro", body, True)
 
@@ -363,20 +452,22 @@ def admin_panel():
     if user.get("role") != "admin":
         return redirect("/")
     
+    pending = load(PENDING_USERS, {})
     users = load(USERS, {})
-    pending_users = [{"username": k, **v} for k, v in users.items() if v.get("status") == "pendiente"]
+    
+    pending_users = [{"username": k, **v} for k, v in pending.items() if v.get("status") == "pendiente"]
     all_users = [{"username": k, **v} for k, v in users.items()]
     
     pending_rows = "".join(f"""
     <tr>
-        <td>{esc(u['username'])}</td>
+        <td><strong>{esc(u['username'])}</strong></td>
         <td>{esc(u.get('full_name', ''))}</td>
         <td>{esc(u.get('email', ''))}</td>
         <td>{u.get('created_at', '')}</td>
         <td>
             <div class=actions>
-                <form method=post action=/admin/approve style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button success small" type=submit>Aprobar</button></form>
-                <form method=post action=/admin/reject style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button danger small" type=submit>Rechazar</button></form>
+                <form method=post action=/admin/approve style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button success small" type=submit>✓ Aprobar</button></form>
+                <form method=post action=/admin/reject style="display:inline"><input type=hidden name=username value="{esc(u['username'])}"><button class="button danger small" type=submit>✗ Rechazar</button></form>
             </div>
         </td>
     </tr>
@@ -384,7 +475,7 @@ def admin_panel():
     
     all_rows = "".join(f"""
     <tr>
-        <td>{esc(u['username'])}</td>
+        <td><strong>{esc(u['username'])}</strong></td>
         <td>{esc(u.get('full_name', ''))}</td>
         <td>{esc(u.get('email', ''))}</td>
         <td><span class="status-badge {u.get('status')}">{u.get('status', 'aprobado')}</span></td>
@@ -393,17 +484,17 @@ def admin_panel():
     </tr>
     """ for u in all_users)
     
-    body = f"""<div class=page-title><div class=wrap><h1>Panel de Administrador</h1><p>Gestión de usuarios y aprobaciones</p></div></div><main class=wrap>
+    body = f"""<div class=page-title><div class=wrap><h1>⚙️ Panel de Administrador</h1><p>Gestión de usuarios y aprobaciones</p></div></div><main class=wrap>
     <section class=panel>
         <div class=admin-panel>
-            <h3>✓ Usuarios Pendientes de Aprobación ({len(pending_users)})</h3>
-            {f'<table class=user-table><thead><tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Fecha de Registro</th><th>Acciones</th></tr></thead><tbody>{pending_rows}</tbody></table>' if pending_users else '<p class=muted>No hay usuarios pendientes</p>'}
+            <h3>🔔 Usuarios Pendientes de Aprobación ({len(pending_users)})</h3>
+            {f'<table class=user-table><thead><tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>{pending_rows}</tbody></table>' if pending_users else '<p class=muted>✓ No hay usuarios pendientes</p>'}
         </div>
     </section>
     
     <section class=panel>
         <div class=admin-panel>
-            <h3>Todos los usuarios ({len(all_users)})</h3>
+            <h3>👥 Todos los Usuarios ({len(all_users)})</h3>
             <table class=user-table>
                 <thead>
                     <tr>
@@ -431,9 +522,14 @@ def admin_approve():
         return redirect("/")
     
     username = request.form.get("username", "").upper()
+    pending = load(PENDING_USERS, {})
     users = load(USERS, {})
-    if username in users:
-        users[username]["status"] = "aprobado"
+    
+    if username in pending:
+        user_data = pending.pop(username)
+        user_data["status"] = "aprobado"
+        users[username] = user_data
+        save(PENDING_USERS, pending)
         save(USERS, users)
     
     return redirect("/admin")
@@ -446,10 +542,11 @@ def admin_reject():
         return redirect("/")
     
     username = request.form.get("username", "").upper()
-    users = load(USERS, {})
-    if username in users:
-        users[username]["status"] = "rechazado"
-        save(USERS, users)
+    pending = load(PENDING_USERS, {})
+    
+    if username in pending:
+        pending.pop(username)
+        save(PENDING_USERS, pending)
     
     return redirect("/admin")
 
@@ -509,6 +606,8 @@ def delete_question(qid):
 def start_exam():
     materia = request.form.get("materia")
     questions = [q for q in questions_for_user() if q.get("materia") == materia and not q.get("placeholder")]
+    if not questions:
+        return redirect("/")
     session["exam"] = {"materia": materia, "ids": [q["id"] for q in random.sample(questions, len(questions))]}
     return redirect("/exam")
 
@@ -523,7 +622,7 @@ def exam():
     for index, question in enumerate(questions, 1):
         choices = ''.join(f'<label class=answer><input type=radio name="answer_{question["id"]}" value={j} required> {chr(65+j)}) {esc(option)}</label>' for j, option in enumerate(question["op"]))
         blocks.append(f'<div class=question><p><b>{index}. {esc(question["p"])}</b></p>{choices}</div>')
-    body = f'<main class=wrap><section class=panel><h1>Examen: {esc(info["materia"])}</h1><form method=post action=/exam/submit>{"".join(blocks)}<div class=button-group><button class="button success" type=submit>Terminar y enviar examen</button><a class=button href="/">Cancelar</a></div></form></section></main>'
+    body = f'<main class=wrap><section class=panel><h1>📋 Examen: {esc(info["materia"])}</h1><p class=muted>{len(questions)} pregunta(s)</p><form method=post action=/exam/submit>{"".join(blocks)}<div class=button-group><button class="button success" type=submit>Terminar y enviar examen</button><a class=button href="/">Cancelar</a></div></form></section></main>'
     return page("Examen", body)
 
 
@@ -536,8 +635,62 @@ def submit_exam():
     result = {"usuario": session["user"], "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"), "materia": info.get("materia", ""), "correctas": correct, "total": len(questions)}
     history = load(HISTORY, []); history.append(result); save(HISTORY, history)
     percentage = int((correct / len(questions)) * 100) if questions else 0
-    rows = ''.join(f'<div class="answer {"correct" if answers[q["id"]] == q["co"] else "wrong"}"><b>{i}. {esc(q["p"])}</b><br>Tu respuesta: {chr(65+answers[q["id"]])} | Respuesta correcta: {chr(65+q["co"])}</div>' for i, q in enumerate(questions, 1))
-    return page("Resultado", f'<main class=wrap><section class=panel><h1>Resultado: {correct}/{len(questions)} ({percentage}%)</h1><p class=muted>🟢 Verde = correcta · 🔴 Rojo = incorrecta</p>{rows}<div class=button-group><a class="button success" href="/">Volver al inicio</a><a class=button href="/progreso">Ver progreso</a></div></section></main>')
+    
+    # Análisis de respuestas
+    feedback_html = ""
+    correct_count = 0
+    for i, q in enumerate(questions, 1):
+        is_correct = answers[q["id"]] == q["co"]
+        if is_correct:
+            correct_count += 1
+            feedback_html += f'''<div class="feedback correct">
+            <b>✓ Pregunta {i}: CORRECTA</b><br>
+            <small>{esc(q["p"])}</small><br>
+            Tu respuesta: <strong>{chr(65+answers[q["id"]])}</strong>
+            </div>'''
+        else:
+            feedback_html += f'''<div class="feedback wrong">
+            <b>✗ Pregunta {i}: INCORRECTA</b><br>
+            <small>{esc(q["p"])}</small><br>
+            Tu respuesta: {chr(65+answers[q["id"]])} | Respuesta correcta: <strong>{chr(65+q["co"])}</strong>
+            </div>'''
+    
+    # Recomendaciones
+    recommendations = ""
+    if percentage == 100:
+        recommendations = '<div class="notice success"><b>🏆 ¡Excelente!</b> Has dominado completamente este tema. Continúa así.</div>'
+    elif percentage >= 80:
+        recommendations = '<div class="notice success"><b>👍 Muy bien!</b> Tienes un buen dominio del tema. Repasa los temas donde fallaste.</div>'
+    elif percentage >= 60:
+        recommendations = '<div class="notice warning"><b>⚠️ Buen progreso</b> Necesitas reforzar algunos conceptos. Revisa las preguntas incorrectas y estudia más.</div>'
+    else:
+        recommendations = '<div class="notice error"><b>📖 Sigue estudiando</b> Necesitas dedicar más tiempo a este tema. Revisa el material de apoyo.</div>'
+    
+    return page("Resultado", f'''<main class=wrap><section class=panel>
+    <h1>📊 Resultado del Examen</h1>
+    <div class=stats>
+    <div class=stat>
+    <b>{percentage}%</b>
+    Desempeño
+    <div class=progress-bar><div class="progress-fill {"success" if percentage >= 80 else "warning" if percentage >= 60 else "danger"}" style="width:{percentage}%"></div></div>
+    </div>
+    <div class=stat>
+    <b>{correct}/{len(questions)}</b>
+    Respuestas Correctas
+    </div>
+    <div class=stat>
+    <b>{len(questions) - correct}/{len(questions)}</b>
+    Por Mejorar
+    </div>
+    </div>
+    {recommendations}
+    <h2 style="margin-top:32px">Análisis Detallado</h2>
+    {feedback_html}
+    <div class=button-group style="margin-top:24px">
+    <a class="button success" href="/">← Volver al inicio</a>
+    <a class=button href="/progreso">Ver mis avances →</a>
+    </div>
+    </section></main>')
 
 
 @app.route("/progreso")
@@ -545,9 +698,54 @@ def progress():
     history = [x for x in load(HISTORY, []) if x.get("usuario") == session["user"]]
     total = sum(x.get("total", 0) for x in history)
     correct = sum(x.get("correctas", 0) for x in history)
-    rows = ''.join(f'<tr><td>{esc(x["fecha"])}</td><td>{esc(x["materia"])}</td><td>{x["correctas"]}/{x["total"]}</td></tr>' for x in reversed(history)) or '<tr><td colspan=3 class=muted>Aún no hay exámenes realizados</td></tr>'
+    rows = ''.join(f'<tr><td>{esc(x["fecha"])}</td><td>{esc(x["materia"])}</td><td>{x["correctas"]}/{x["total"]}</td><td>{int((x["correctas"]/x["total"])*100)}%</td></tr>' for x in reversed(history)) or '<tr><td colspan=4 class=muted>Aún no hay exámenes realizados</td></tr>'
     percentage = int((correct / total) * 100) if total else 0
-    body = f'<main class=wrap><h1>Mi progreso</h1><div class=stats><div class=stat><b>{len(history)}</b>Exámenes realizados</div><div class=stat><b>{correct}</b>Respuestas correctas</div><div class=stat><b>{percentage}%</b>Promedio de aciertos</div></div><section class=panel><h2>Historial de exámenes</h2><table class=user-table><thead><tr><th>Fecha</th><th>Materia</th><th>Resultado</th></tr></thead><tbody>{rows}</tbody></table></section></main>'
+    
+    # Análisis por materia
+    subject_analysis = {}
+    for h in history:
+        materia = h.get("materia", "Sin materia")
+        if materia not in subject_analysis:
+            subject_analysis[materia] = {"total": 0, "correct": 0, "exams": 0}
+        subject_analysis[materia]["total"] += h.get("total", 0)
+        subject_analysis[materia]["correct"] += h.get("correctas", 0)
+        subject_analysis[materia]["exams"] += 1
+    
+    subject_rows = "".join(f'<tr><td>{esc(k)}</td><td>{v["exams"]}</td><td>{v["correct"]}/{v["total"]}</td><td>{int((v["correct"]/v["total"])*100)}%</td></tr>' for k, v in sorted(subject_analysis.items()) if v["total"] > 0)
+    
+    body = f'''<main class=wrap>
+    <h1>📈 Mi Progreso Académico</h1>
+    <div class=stats>
+    <div class=stat>
+    <b>{len(history)}</b>
+    Exámenes Realizados
+    </div>
+    <div class=stat>
+    <b>{percentage}%</b>
+    Promedio General
+    <div class=progress-bar><div class="progress-fill {"success" if percentage >= 80 else "warning" if percentage >= 60 else "danger"}" style="width:{percentage}%"></div></div>
+    </div>
+    <div class=stat>
+    <b>{correct}/{total}</b>
+    Preguntas Correctas
+    </div>
+    </div>
+    
+    <section class=panel>
+    <h2>📚 Desempeño por Materia</h2>
+    {'<table class=user-table><thead><tr><th>Materia</th><th>Exámenes</th><th>Aciertos</th><th>Porcentaje</th></tr></thead><tbody>' + subject_rows + '</tbody></table>' if subject_rows else '<p class=muted>Sin datos aún</p>'}
+    </section>
+    
+    <section class=panel>
+    <h2>📋 Historial de Exámenes</h2>
+    <table class=user-table>
+    <thead>
+    <tr><th>Fecha</th><th>Materia</th><th>Resultado</th><th>Porcentaje</th></tr>
+    </thead>
+    <tbody>{rows}</tbody>
+    </table>
+    </section>
+    </main>'''
     return page("Progreso", body)
 
 
