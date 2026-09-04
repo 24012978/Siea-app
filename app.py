@@ -1,323 +1,560 @@
-import os,json,random,hashlib
-from flask import Flask,request,redirect,session
+import os,json,random,hashlib,uuid,sqlite3
+from flask import Flask,request,redirect,session,render_template_string
 from datetime import datetime as dt
+from functools import wraps
 
 app=Flask(__name__)
-app.secret_key="siea_final_profesional_completo"
+app.secret_key="siea_final_profesional_completo_2026"
+
+# ============== RUTAS DE ARCHIVOS ==============
 DB=os.path.expanduser("~/preg.json")
 HU=os.path.expanduser("~/hist.json")
 UU=os.path.expanduser("~/user.json")
 MM=os.path.expanduser("~/materias.json")
 ADMIN_DB=os.path.expanduser("~/admin.json")
-# CREAR ADMIN AUTOMATICO
-def hash_temp(p):
-    import hashlib
+USUARIOS_PENDIENTES=os.path.expanduser("~/usuarios_pendientes.json")
+PAGOS_DB=os.path.expanduser("~/pagos.json")
+
+# ============== FUNCIONES HASH Y SEGURIDAD ==============
+def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
+def require_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            return redirect("/")
+        return f(*args, **kwargs)
+    return decorated_function
+
+def require_admin(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("role") != "admin":
+            return '<div style="text-align:center;padding:50px;color:red"><h1>❌ ACCESO DENEGADO</h1><p>Se requieren permisos de administrador</p><a href="/">← Volver</a></div>'
+        return f(*args, **kwargs)
+    return decorated_function
+
+# ============== FUNCIONES DE BASE DE DATOS ==============
 def ensure_admin():
     try:
-        import json
-        # crea admin.json si no existe
         if not os.path.exists(ADMIN_DB):
-            adm={"ADMIN":{"password_hash":hash_temp("Admin123"),"status":"aprobado","role":"admin","email":"admin@siea.com"}}
-            with open(ADMIN_DB,"w") as f: json.dump(adm,f)
-        # crea user.json si no existe
+            adm={"ADMIN":{"password_hash":hash_password("Admin123"),"status":"aprobado","role":"admin","email":"admin@siea.com","created_at":dt.now().strftime("%d/%m/%Y %H:%M")}}
+            with open(ADMIN_DB,"w") as f: json.dump(adm,f,indent=2)
         if not os.path.exists(UU):
-            u={"ADMIN":{"password_hash":hash_temp("Admin123"),"status":"aprobado","role":"admin","email":"admin@siea.com"}}
-            with open(UU,"w") as f: json.dump(u,f)
+            u={"ADMIN":{"password_hash":hash_password("Admin123"),"status":"aprobado","role":"admin","email":"admin@siea.com","full_name":"Administrador Sistema","created_at":dt.now().strftime("%d/%m/%Y %H:%M")}}
+            with open(UU,"w") as f: json.dump(u,f,indent=2)
+        if not os.path.exists(USUARIOS_PENDIENTES):
+            with open(USUARIOS_PENDIENTES,"w") as f: json.dump({},f)
+        if not os.path.exists(PAGOS_DB):
+            with open(PAGOS_DB,"w") as f: json.dump({},f)
     except: pass
 ensure_admin()
+
 def ld():
- try:
-  if os.path.exists(DB):
-   with open(DB) as f: return json.load(f)
- except: pass
- return []
+    try:
+        if os.path.exists(DB):
+            with open(DB) as f: return json.load(f)
+    except: pass
+    return []
+
 def sv(d):
- with open(DB,"w") as f: json.dump(d,f)
+    with open(DB,"w") as f: json.dump(d,f,indent=2)
+
 def ld_h():
- try:
-  if os.path.exists(HU):
-   with open(HU) as f: return json.load(f)
- except: pass
- return []
+    try:
+        if os.path.exists(HU):
+            with open(HU) as f: return json.load(f)
+    except: pass
+    return []
+
 def sv_h(d):
- with open(HU,"w") as f: json.dump(d,f)
+    with open(HU,"w") as f: json.dump(d,f,indent=2)
+
 def ld_u():
- try:
-  if os.path.exists(UU):
-   with open(UU) as f: return json.load(f)
- except: pass
- return {}
+    try:
+        if os.path.exists(UU):
+            with open(UU) as f: return json.load(f)
+    except: pass
+    return {}
+
 def sv_u(d):
- with open(UU,"w") as f: json.dump(d,f)
+    with open(UU,"w") as f: json.dump(d,f,indent=2)
+
 def ld_m():
- try:
-  if os.path.exists(MM):
-   with open(MM) as f: return json.load(f)
- except: pass
- return {}
+    try:
+        if os.path.exists(MM):
+            with open(MM) as f: return json.load(f)
+    except: pass
+    return {}
+
 def sv_m(d):
- with open(MM,"w") as f: json.dump(d,f)
+    with open(MM,"w") as f: json.dump(d,f,indent=2)
+
 def ld_admin():
- try:
-  if os.path.exists(ADMIN_DB):
-   with open(ADMIN_DB) as f: return json.load(f)
- except: pass
- return {}
+    try:
+        if os.path.exists(ADMIN_DB):
+            with open(ADMIN_DB) as f: return json.load(f)
+    except: pass
+    return {}
+
 def sv_admin(d):
- with open(ADMIN_DB,"w") as f: json.dump(d,f)
+    with open(ADMIN_DB,"w") as f: json.dump(d,f,indent=2)
 
-def hash_password(p):
- return hashlib.sha256(p.encode()).hexdigest()
+def ld_pendientes():
+    try:
+        if os.path.exists(USUARIOS_PENDIENTES):
+            with open(USUARIOS_PENDIENTES) as f: return json.load(f)
+    except: pass
+    return {}
 
-def login_page():
- h=""
- h+='<meta name=viewport content="width=device-width,initial-scale=1">'
- h+='<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">'
- h+='<style>'
- h+='body{margin:0;background:#050B05;color:#E0EFE0;font-family:Montserrat,system-ui;min-height:100vh;display:flex;flex-direction:column}'
- h+='.hero{background:radial-gradient(ellipse at 20% 20%, rgba(0,255,128,0.15), transparent 55%), linear-gradient(180deg,#0D1A0D 0%,#050905 100%);border-bottom:2px solid #00FF80;padding:22px 14px}'
- h+='.sigla{font-size:38px;font-weight:900;font-style:italic;letter-spacing:5px;color:#FFD700;text-shadow:0 3px 15px rgba(255,215,0,0.4)}'
- h+='.sub{font-size:10px;letter-spacing:3px;color:#8AB38A;font-weight:700;margin-top:4px}'
- h+='.purpose{background:rgba(0,0,0,0.6);border-left:4px solid #FFD700;padding:12px;margin-top:14px;border-radius:0 10px 10px 0}'
- h+='.purpose b{color:#FFD700;font-size:10px;letter-spacing:1.2px;display:block;margin-bottom:4px}'
- h+='.purpose p{font-size:11px;line-height:1.6;color:#D2DCD2;margin:6px 0 0 0;text-align:justify}'
- h+='.container{display:flex;flex:1;gap:20px;padding:20px;flex-wrap:wrap;justify-content:center}'
- h+='.card-login{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(0,255,128,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8)}'
- h+='.card-support{width:100%;max-width:395px;background:rgba(13,26,13,0.95);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,0.8);text-align:center}'
- h+='.lbl{font-size:9px;letter-spacing:1.5px;color:#00FF80;font-weight:700;margin:12px 0 4px 2px}'
- h+='.inp{width:100%;padding:13px;background:#020502;border:1.5px solid #1A401A;border-radius:10px;color:#fff;box-sizing:border-box;font-size:13px}'
- h+='.btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:900;letter-spacing:2px;margin-top:16px;background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;cursor:pointer}'
- h+='.btn-register{background:linear-gradient(180deg,#FF9800,#E65100);margin-top:10px}'
- h+='.btn-paypal{background:linear-gradient(180deg,#003087,#009cde);margin-top:10px;width:100%;padding:12px}'
- h+='.tab-buttons{display:flex;gap:10px;margin-bottom:10px}'
- h+='.tab-btn{flex:1;padding:10px;border:2px solid #00FF80;background:transparent;color:#00FF80;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px}'
- h+='.tab-btn.active{background:#00FF80;color:#050905}'
- h+='.tab-content{display:none}'
- h+='.tab-content.active{display:block}'
- h+='.legal{font-size:7.5px;color:#8EA88E;line-height:1.5;text-align:justify;margin-top:18px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px}'
- h+='.legal b{color:#FFD700;font-size:7.5px}'
- h+='.support-info{margin:15px 0;padding:12px;background:rgba(0,255,128,0.1);border-left:4px solid #00FF80;border-radius:8px}'
- h+='.support-info b{color:#00FF80;display:block;margin-bottom:5px}'
- h+='.support-info p{margin:5px 0;font-size:11px;color:#D2DCD2}'
- h+='.support-tel{font-size:16px;font-weight:900;color:#FFD700;letter-spacing:2px;margin:10px 0}'
- h+='.foot{margin-top:auto;background:#020402;padding:12px;text-align:center;font-size:7px;color:#3A5A3A;border-top:1px solid #0D1A0D;letter-spacing:1px}'
- h+='.error-msg{background:#260A0A;border:1px solid #5A1A1A;color:#FF8A80;padding:10px;border-radius:8px;margin-bottom:10px;font-size:11px}'
- h+='.success-msg{background:#0A261A;border:1px solid #1A5A2A;color:#00FF80;padding:10px;border-radius:8px;margin-bottom:10px;font-size:11px}'
- h+='</style>'
- h+='<div class=hero>'
- h+='<div class=sigla>S.I.E.A.</div>'
- h+='<div class=sub>SISTEMA INTEGRAL DE EVALUACION PARA EL ASCENSO</div>'
- h+='<div class=purpose>'
- h+='<b>PROPOSITO Y FUNCION INSTITUCIONAL</b>'
- h+='<p>Plataforma de fortalecimiento academico e institucional disenada bajo estrictos estÃ¡ndares de calidad para optimizar la preparacion, evaluacion y profesionalizacion del personal en proceso de ascenso.</p>'
- h+='</div></div>'
- h+='<div class=container>'
- h+='<div class=card-login>'
- h+='<div style="text-align:center"><div style="font-weight:900;letter-spacing:2.5px;color:#00FF80;font-size:12px">ACCESO AUTORIZADO</div><div style="font-size:9px;color:#7EA97E;margin-top:3px;letter-spacing:1px">Ingrese sus credenciales</div></div>'
- h+='<div class=tab-buttons>'
- h+='<button type=button class="tab-btn active" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'login-form\').classList.add(\'active\')">Ingresar</button>'
- h+='<button type=button class="tab-btn" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'register-form\').classList.add(\'active\')">Registrarse</button>'
- h+='</div>'
- h+='<div id=login-form class="tab-content active">'
- h+='<form method=post action=/login>'
- h+='<div class=lbl>USUARIO / MATRICULA</div><input class=inp name=user placeholder="Ej. 123456" required>'
- h+='<div class=lbl>CONTRASENA</div><input class=inp type=password name=pass placeholder="********" required>'
- h+='<button class=btn>INGRESAR AL SISTEMA</button>'
- h+='</form>'
- h+='</div>'
- h+='<div id=register-form class="tab-content">'
- h+='<form method=post action=/register>'
- h+='<div class=lbl>CREAR USUARIO / MATRICULA</div><input class=inp name=new_user placeholder="Ej. 123456" required>'
- h+='<div class=lbl>NOMBRE COMPLETO</div><input class=inp name=full_name placeholder="Ej. Juan PÃ©rez" required>'
- h+='<div class=lbl>CORREO ELECTRONICO</div><input class=inp type=email name=email placeholder="tu@correo.com" required>'
- h+='<div class=lbl>CREAR CONTRASEÃ‘A</div><input class=inp type=password name=new_pass placeholder="Min 6 caracteres" required minlength=6>'
- h+='<div class=lbl>CONFIRMAR CONTRASEÃ‘A</div><input class=inp type=password name=confirm_pass placeholder="Repetir contraseÃ±a" required minlength=6>'
- h+='<button class=btn>âœ… CREAR CUENTA</button>'
- h+='</form>'
- h+='</div>'
- h+='<div class=legal>'
- h+='<b>AVISO DE CONFIDENCIALIDAD Y MARCO LEGAL:</b> La informacion contenida, procesada y generada en esta plataforma es de caracter estrictamente confidencial, reservado y de uso exclusivo para personal autorizado.'
- h+='</div></div>'
- h+='<div class=card-support>'
- h+='<div style="font-weight:900;letter-spacing:2.5px;color:#FFD700;font-size:12px">SOPORTE Y SUSCRIPCION</div>'
- h+='<div class=support-info>'
- h+='<b>ðŸ“ž SOPORTE TECNICO DIRECTO</b>'
- h+='<p>Para dudas, reportes o asistencia inmediata:</p>'
- h+='<div class=support-tel>+52 811 0290152</div>'
- h+='<p style="font-size:10px;color:#FFD700;margin-top:10px">Disponible de Lunes a Viernes<br>08:00 - 18:00 hrs</p>'
- h+='</div>'
- h+='<div class=support-info>'
- h+='<b>ðŸ’³ SUSCRIPCION PREMIUM</b>'
- h+='<p>Acceso ilimitado a todas las materias, reactivos y evaluaciones sin restricciones.</p>'
- h+='<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">'
- h+='<input type="hidden" name="cmd" value="_xclick">'
- h+='<input type="hidden" name="business" value="tu_email_paypal@example.com">'
- h+='<input type="hidden" name="item_name" value="SuscripciÃ³n S.I.E.A. Premium">'
- h+='<input type="hidden" name="amount" value="9.99">'
- h+='<input type="hidden" name="currency_code" value="USD">'
- h+='<input type="hidden" name="return" value="http://localhost:5002/payment_success">'
- h+='<input type="hidden" name="cancel_return" value="http://localhost:5002/">'
- h+='<button type="submit" class="btn btn-paypal">ðŸ”’ PAGAR SUSCRIPCION - $9.99 USD</button>'
- h+='</form>'
- h+='</div>'
- h+='</div>'
- h+='</div>'
- h+='<div class=foot>PLATAFORMA DE USO INTERNO Y CONTROL INSTITUCIONAL | S.I.E.A. 2026</div>'
- return h
+def sv_pendientes(d):
+    with open(USUARIOS_PENDIENTES,"w") as f: json.dump(d,f,indent=2)
 
+def ld_pagos():
+    try:
+        if os.path.exists(PAGOS_DB):
+            with open(PAGOS_DB) as f: return json.load(f)
+    except: pass
+    return {}
+
+def sv_pagos(d):
+    with open(PAGOS_DB,"w") as f: json.dump(d,f,indent=2)
+
+# ============== PÁGINA DE LOGIN MEJORADA ==============
+def login_page(mensaje=""):
+    h=""
+    h+='<meta name=viewport content="width=device-width,initial-scale=1">'
+    h+='<meta charset="UTF-8">'
+    h+='<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">'
+    h+='<style>'
+    h+='*{margin:0;padding:0;box-sizing:border-box}'
+    h+='body{background:#050B05;color:#E0EFE0;font-family:Montserrat,system-ui;min-height:100vh;display:flex;flex-direction:column}'
+    
+    # Hero Section Mejorada
+    h+='.hero{background:radial-gradient(ellipse at 20% 20%, rgba(0,255,128,0.15), transparent 55%), linear-gradient(180deg,#0D1A0D 0%,#050905 100%);border-bottom:3px solid #00FF80;padding:40px 20px;text-align:center;box-shadow:0 10px 40px rgba(0,255,128,0.1)}'
+    h+='.logo-container{display:flex;flex-direction:column;align-items:center;gap:15px}'
+    h+='.sigla{font-size:48px;font-weight:900;font-style:italic;letter-spacing:8px;color:#FFD700;text-shadow:0 5px 20px rgba(255,215,0,0.5);animation:glow 2s ease-in-out infinite}'
+    h+='@keyframes glow{0%,100%{text-shadow:0 5px 20px rgba(255,215,0,0.5)}50%{text-shadow:0 5px 30px rgba(255,215,0,0.8)}}'
+    h+='.sub{font-size:12px;letter-spacing:4px;color:#8AB38A;font-weight:700;margin-top:5px}'
+    h+='.tagline{font-size:13px;color:#00FF80;margin-top:15px;font-style:italic;font-weight:600}'
+    h+='.purpose{background:rgba(0,0,0,0.7);border-left:5px solid #FFD700;border-radius:8px;padding:15px 20px;margin-top:20px;max-width:600px;margin-left:auto;margin-right:auto}'
+    h+='.purpose b{color:#FFD700;font-size:11px;letter-spacing:2px;display:block;margin-bottom:8px;text-transform:uppercase}'
+    h+='.purpose p{font-size:12px;line-height:1.8;color:#D2DCD2;text-align:justify}'
+    
+    # Contenedor principal
+    h+='.container{display:flex;flex:1;gap:30px;padding:40px 20px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%}'
+    
+    # Tarjetas
+    h+='.card{width:100%;max-width:400px;background:linear-gradient(135deg,rgba(13,26,13,0.95),rgba(10,15,10,0.95));border:1.5px solid rgba(0,255,128,0.4);border-radius:16px;padding:25px;box-shadow:0 20px 50px rgba(0,0,0,0.8);backdrop-filter:blur(10px)}'
+    h+='.card-admin{border-color:rgba(255,215,0,0.4)}'
+    h+='.card-support{border-color:rgba(255,215,0,0.4)}'
+    h+='.card-header{text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid rgba(255,255,255,0.1)}'
+    h+='.card-title{font-weight:900;letter-spacing:2px;font-size:13px;text-transform:uppercase}'
+    h+='.card-title-login{color:#00FF80}'
+    h+='.card-title-admin{color:#FFD700}'
+    h+='.card-title-support{color:#FFD700}'
+    h+='.subtitle{font-size:10px;color:#7EA97E;margin-top:5px;letter-spacing:1px}'
+    
+    # Tabs
+    h+='.tab-buttons{display:flex;gap:10px;margin-bottom:15px}'
+    h+='.tab-btn{flex:1;padding:11px;border:2px solid #00FF80;background:transparent;color:#00FF80;border-radius:8px;cursor:pointer;font-weight:700;font-size:11px;transition:all 0.3s}'
+    h+='.tab-btn:hover{background:rgba(0,255,128,0.2)}'
+    h+='.tab-btn.active{background:#00FF80;color:#050905;box-shadow:0 0 15px rgba(0,255,128,0.4)}'
+    h+='.tab-content{display:none}'
+    h+='.tab-content.active{display:block}'
+    
+    # Formularios
+    h+='.lbl{font-size:10px;letter-spacing:1.8px;color:#00FF80;font-weight:700;margin:14px 0 5px 0;text-transform:uppercase}'
+    h+='.inp{width:100%;padding:13px;background:rgba(5,11,5,0.8);border:1.5px solid #1A401A;border-radius:10px;color:#fff;font-size:13px;transition:all 0.3s;font-family:Montserrat}'
+    h+='.inp:focus{outline:none;border-color:#00FF80;box-shadow:0 0 10px rgba(0,255,128,0.3)}'
+    h+='.btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:900;letter-spacing:2px;margin-top:16px;background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;cursor:pointer;font-size:12px;transition:all 0.3s;text-transform:uppercase}'
+    h+='.btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,255,128,0.3)}'
+    h+='.btn-register{background:linear-gradient(180deg,#FF9800,#E65100)}'
+    h+='.btn-register:hover{box-shadow:0 10px 25px rgba(255,152,0,0.4)}'
+    h+='.btn-admin{background:linear-gradient(180deg,#FFD700,#CCAC00);color:#050905}'
+    h+='.btn-admin:hover{box-shadow:0 10px 25px rgba(255,215,0,0.4)}'
+    
+    # Mensajes
+    h+='.error-msg{background:rgba(38,10,10,0.9);border:1px solid #5A1A1A;color:#FF8A80;padding:12px;border-radius:8px;margin-bottom:12px;font-size:11px;border-left:4px solid #FF6B6B}'
+    h+='.success-msg{background:rgba(10,38,26,0.9);border:1px solid #1A5A2A;color:#00FF80;padding:12px;border-radius:8px;margin-bottom:12px;font-size:11px;border-left:4px solid #00FF80}'
+    h+='.warning-msg{background:rgba(51,38,10,0.9);border:1px solid #5A4A1A;color:#FFD700;padding:12px;border-radius:8px;margin-bottom:12px;font-size:11px;border-left:4px solid #FFD700}'
+    
+    # Info
+    h+='.support-info{margin:15px 0;padding:14px;background:rgba(0,255,128,0.08);border-left:4px solid #00FF80;border-radius:8px}'
+    h+='.support-info b{color:#00FF80;display:block;margin-bottom:6px;font-size:11px}'
+    h+='.support-info p{margin:5px 0;font-size:11px;color:#D2DCD2}'
+    h+='.support-tel{font-size:18px;font-weight:900;color:#FFD700;letter-spacing:2px;margin:12px 0}'
+    
+    # Legal
+    h+='.legal{font-size:8px;color:#8EA88E;line-height:1.6;text-align:justify;margin-top:18px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px}'
+    h+='.legal b{color:#FFD700}'
+    
+    # Footer
+    h+='.foot{margin-top:auto;background:#020402;padding:15px;text-align:center;font-size:8px;color:#3A5A3A;border-top:1px solid #0D1A0D;letter-spacing:1.5px;width:100%}'
+    h+='</style>'
+    
+    # HTML
+    h+='<div class=hero>'
+    h+='<div class=logo-container>'
+    h+='<div class=sigla>S.I.E.A.</div>'
+    h+='<div class=sub>SISTEMA INTEGRAL DE EVALUACIÓN PARA EL ASCENSO</div>'
+    h+='<div class=tagline>🎓 Plataforma Profesional de Evaluación y Capacitación</div>'
+    h+='</div>'
+    h+='<div class=purpose>'
+    h+='<b>✨ Propósito y Función Institucional</b>'
+    h+='<p>Plataforma integral de fortalecimiento académico diseñada bajo estrictos estándares de calidad para optimizar la preparación, evaluación y profesionalización del personal. Sistema seguro, confiable y accesible que promueve la excelencia institucional.</p>'
+    h+='</div>'
+    h+='</div>'
+    
+    h+='<div class=container>'
+    
+    # TARJETA LOGIN
+    h+='<div class=card>'
+    h+='<div class=card-header>'
+    h+='<div class="card-title card-title-login">🔐 ACCESO AL SISTEMA</div>'
+    h+='<div class=subtitle>Ingrese sus credenciales</div>'
+    h+='</div>'
+    if mensaje: h+=mensaje
+    h+='<div class=tab-buttons>'
+    h+='<button type=button class="tab-btn active" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'login-form\').classList.add(\'active\')">INGRESAR</button>'
+    h+='<button type=button class="tab-btn" onclick="document.querySelectorAll(\'.tab-content\').forEach(e=>e.classList.remove(\'active\')); document.getElementById(\'register-form\').classList.add(\'active\')">REGISTRARSE</button>'
+    h+='</div>'
+    
+    # Formulario Login
+    h+='<div id=login-form class="tab-content active">'
+    h+='<form method=post action=/login>'
+    h+='<div class=lbl>👤 Usuario / Matrícula</div>'
+    h+='<input class=inp name=user placeholder="Ej. EMP001" required>'
+    h+='<div class=lbl>🔑 Contraseña</div>'
+    h+='<input class=inp type=password name=pass placeholder="••••••••" required>'
+    h+='<button class=btn>INGRESAR AL SISTEMA</button>'
+    h+='</form>'
+    h+='</div>'
+    
+    # Formulario Registro
+    h+='<div id=register-form class="tab-content">'
+    h+='<form method=post action=/register>'
+    h+='<div class=lbl>👤 Usuario / Matrícula</div>'
+    h+='<input class=inp name=new_user placeholder="Ej. EMP001" required>'
+    h+='<div class=lbl>📝 Nombre Completo</div>'
+    h+='<input class=inp name=full_name placeholder="Juan Pérez García" required>'
+    h+='<div class=lbl>📧 Correo Electrónico</div>'
+    h+='<input class=inp type=email name=email placeholder="tu@correo.com" required>'
+    h+='<div class=lbl>🔑 Crear Contraseña</div>'
+    h+='<input class=inp type=password name=new_pass placeholder="Min. 8 caracteres" required minlength=8>'
+    h+='<div class=lbl>✓ Confirmar Contraseña</div>'
+    h+='<input class=inp type=password name=confirm_pass placeholder="Repetir contraseña" required minlength=8>'
+    h+='<button class="btn btn-register">✓ REGISTRARSE</button>'
+    h+='<p style="font-size:10px;color:#8AB38A;margin-top:10px;text-align:center">Tu solicitud será revisada por un administrador</p>'
+    h+='</form>'
+    h+='</div>'
+    
+    h+='<div class=legal>'
+    h+='<b>⚖️ AVISO DE CONFIDENCIALIDAD:</b> La información en esta plataforma es estrictamente confidencial y de uso exclusivo autorizado. Prohibido compartir credenciales. Violaciones serán reportadas.'
+    h+='</div>'
+    h+='</div>'
+    
+    # TARJETA ADMINISTRADOR
+    h+='<div class="card card-admin">'
+    h+='<div class=card-header>'
+    h+='<div class="card-title card-title-admin">⚙️ PANEL ADMINISTRATIVO</div>'
+    h+='<div class=subtitle>Acceso exclusivo - Ingrese contraseña</div>'
+    h+='</div>'
+    h+='<form method=post action=/admin_login>'
+    h+='<div class=lbl>🔐 Contraseña Administrador</div>'
+    h+='<input class=inp type=password name=admin_pass placeholder="••••••••" required>'
+    h+='<button class="btn btn-admin">ACCEDER A ADMINISTRACIÓN</button>'
+    h+='</form>'
+    h+='</div>'
+    
+    # TARJETA SOPORTE
+    h+='<div class="card card-support">'
+    h+='<div class=card-header>'
+    h+='<div class="card-title card-title-support">📞 SOPORTE Y SUSCRIPCIÓN</div>'
+    h+='</div>'
+    h+='<div class=support-info>'
+    h+='<b>☎️ SOPORTE TÉCNICO</b>'
+    h+='<p>Para dudas, reportes o asistencia inmediata:</p>'
+    h+='<div class=support-tel>+52 811 0290152</div>'
+    h+='<p style="font-size:10px;color:#FFD700">Lunes a Viernes | 08:00 - 18:00 hrs</p>'
+    h+='</div>'
+    h+='<div class=support-info>'
+    h+='<b>💳 SUSCRIPCIÓN PREMIUM</b>'
+    h+='<p>Acceso ilimitado a todas las materias, reactivos y evaluaciones personalizadas.</p>'
+    h+='<p style="font-size:11px;font-weight:700;color:#00FF80;margin-top:10px">Precio: <span style="color:#FFD700">$9.99 USD/mes</span></p>'
+    h+='<p style="font-size:10px;margin-top:8px">Contacte al administrador para más información</p>'
+    h+='</div>'
+    h+='</div>'
+    
+    h+='</div>'
+    h+='<div class=foot>© 2026 S.I.E.A. - Plataforma de Evaluación Institucional | Todos los derechos reservados</div>'
+    
+    return h
+
+# ============== PÁGINA BASE ==============
 def base(t,b):
- u=session.get("user","")
- frases=["( La disciplina es la clave del Ã©xito operativo )", "( La constancia vence lo que la dicha no alcanza )", "( El conocimiento es poder y preparaciÃ³n )", "( Cada pregunta respondida es un paso hacia el Ã©xito )"]
- f_activa = random.choice(frases)
- h=""
- h+='<meta name=viewport content="width=device-width,initial-scale=1">'
- h+='<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">'
- h+='<style>'
- h+='body{margin:0;background:#050B05;color:#E0EFE0;font-family:Montserrat,system-ui}'
- h+='.top{background:linear-gradient(90deg,#00FF80,#00B359);color:#050905;padding:10px;text-align:center;font-weight:900;font-style:italic;font-size:14px;letter-spacing:1.5px}'
- h+='.bar{background:#0D1A0D;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00FF80}'
- h+='.user-info{font-size:12px;color:#00FF80;font-weight:700}'
- h+='.sub-bar{font-size:9px;color:#A0C8A0;font-style:italic;margin-top:2px}'
- h+='.btn-back{background:#1A331A;color:#fff;padding:7px 12px;border-radius:7px;text-decoration:none;font-size:11px;border:1px solid #2E5A2E;display:inline-block}'
- h+='.btn-inicio{background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1px;display:inline-block}'
- h+='.sec-title{color:#050905;padding:11px;text-align:center;font-weight:900;border-radius:9px;margin:12px;font-size:12px;letter-spacing:0.5px}'
- h+='.title-materias{background:linear-gradient(90deg,#FFD700,#FFA500)}'
- h+='.title-trabajando{background:linear-gradient(90deg,#00E5FF,#00839F)}'
- h+='.title-general{background:linear-gradient(90deg,#FFD700,#FFA500)}'
- h+='.card{border-radius:12px;padding:14px;margin:10px 12px;box-shadow:0 4px 12px rgba(0,0,0,0.6)}'
- h+='.card-hi{background:linear-gradient(180deg,#0F260F,#081708);border-left:6px solid #00FF80;border-top:1px solid #1A401A}'
- h+='.card-mom{background:linear-gradient(180deg,#0A1F33,#06121F);border-left:6px solid #00E5FF;border-top:1px solid #10314D}'
- h+='.card-ley{background:linear-gradient(180deg,#33260A,#1F1706);border-left:6px solid #FFD700;border-top:1px solid #59420A}'
- h+='.card-new{background:linear-gradient(180deg,#1A1A1A,#0D0D0D);border-left:6px solid #C5A059}'
- h+='.card-gen{background:linear-gradient(180deg,#1A1605,#0D0B02);border:2px solid #FFD700}'
- h+='.card-gen-vacio{background:#141414;border:2px solid #2A2A2A;opacity:0.6}'
- h+='.card-per{background:linear-gradient(180deg,#140F26,#0A0817);border:2px dashed #9C27B0}'
- h+='.card-create{background:linear-gradient(180deg,#2A1B0A,#140D05);border:2px solid #FF9800}'
- h+='.card-preg{background:#0D170D;border:1px solid #1A3A1A;border-left:4px solid #00FF80}'
- h+='.btn{width:100%;padding:12px;border:0;border-radius:8px;font-weight:800;margin-top:8px;cursor:pointer;font-size:12px}'
- h+='.btn-hi{background:linear-gradient(180deg,#00FF80,#00B359);color:#050905}'
- h+='.btn-mom{background:linear-gradient(180deg,#00E5FF,#0099B8);color:#050905}'
- h+='.btn-ley{background:linear-gradient(180deg,#FFD700,#CCAC00);color:#050905}'
- h+='.btn-gold{background:linear-gradient(180deg,#FFD700,#CCAC00);color:#050905}'
- h+='.btn-orange{background:linear-gradient(180deg,#FF9800,#E65100);color:#fff}'
- h+='.btn-green{background:linear-gradient(180deg,#00FF80,#00B359);color:#050905}'
- h+='.btn-purple{background:linear-gradient(180deg,#CE93D8,#AB47BC);color:#050905}'
- h+='.btn-edit{background:#FFD700;color:#050905;padding:8px 14px;border-radius:6px;text-decoration:none;font-size:11px;font-weight:800;display:inline-block}'
- h+='.btn-del{background:#4D1A1A;color:#ff9999;padding:8px 14px;border-radius:6px;text-decoration:none;font-size:11px;display:inline-block;margin-left:6px}'
- h+='.input{width:100%;padding:11px;background:#050B05;border:1px solid #FF9800;border-radius:8px;color:#fff;margin:5px 0;box-sizing:border-box}'
- h+='.opt{display:block;background:#050B05;border:1px solid #1A401A;padding:10px;margin:6px 0;border-radius:8px}'
- h+='.badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;display:inline-block}'
- h+='</style>'
- h+=f'<div class=top>S.I.E.A. - {t}</div>'
- h+=f'<div class=bar><div><div class=user-info>Bienvenido, {u}</div><div class=sub-bar>{f_activa}</div></div><div><a href=/admin class=btn-back>ADMIN</a> <a href=/historial class=btn-back>HISTORIAL</a> <a href=/logout class=btn-back>SALIR</a></div></div>'
- return h + b
+    u=session.get("user","")
+    role=session.get("role","user")
+    frases=["📚 La disciplina es la clave del éxito", "💡 La constancia vence lo que la dicha no alcanza", "🎯 El conocimiento es poder", "✨ Cada pregunta te acerca al éxito"]
+    f_activa = random.choice(frases)
+    h=""
+    h+='<meta name=viewport content="width=device-width,initial-scale=1">'
+    h+='<meta charset="UTF-8">'
+    h+='<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">'
+    h+='<style>'
+    h+='body{margin:0;background:#050B05;color:#E0EFE0;font-family:Montserrat,system-ui}'
+    h+='.top{background:linear-gradient(90deg,#00FF80,#00B359);color:#050905;padding:12px;text-align:center;font-weight:900;font-style:italic;font-size:14px;letter-spacing:2px;box-shadow:0 4px 15px rgba(0,255,128,0.3)}'
+    h+='.bar{background:#0D1A0D;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00FF80;flex-wrap:wrap;gap:10px}'
+    h+='.user-info{font-size:12px;color:#00FF80;font-weight:700}'
+    h+='.sub-bar{font-size:10px;color:#A0C8A0;font-style:italic;margin-top:2px}'
+    h+='.btn-back{background:#1A331A;color:#fff;padding:8px 14px;border-radius:7px;text-decoration:none;font-size:11px;border:1px solid #2E5A2E;display:inline-block;margin:2px;transition:all 0.3s}'
+    h+='.btn-back:hover{background:#2E5A2E;box-shadow:0 0 10px rgba(0,255,128,0.2)}'
+    h+='.btn-admin-dash{background:linear-gradient(180deg,#FFD700,#CCAC00);color:#050905;padding:8px 14px;border-radius:7px;text-decoration:none;font-size:11px;font-weight:700;display:inline-block;margin:2px}'
+    h+='.btn-logout{background:#4D1A1A;color:#ff9999;padding:8px 14px;border-radius:7px;text-decoration:none;font-size:11px;display:inline-block;margin:2px}'
+    h+='.sec-title{color:#050905;padding:12px;text-align:center;font-weight:900;border-radius:9px;margin:12px;font-size:12px;letter-spacing:1px}'
+    h+='.title-materias{background:linear-gradient(90deg,#FFD700,#FFA500)}'
+    h+='.card{border-radius:12px;padding:14px;margin:10px 12px;box-shadow:0 4px 12px rgba(0,0,0,0.6);border-left:6px solid #00FF80}'
+    h+='.card-gen{background:linear-gradient(180deg,#1A1605,#0D0B02);border:2px solid #FFD700}'
+    h+='.btn{width:100%;padding:12px;border:0;border-radius:8px;font-weight:800;margin-top:8px;cursor:pointer;font-size:12px;background:linear-gradient(180deg,#00FF80,#00B359);color:#050905;transition:all 0.3s}'
+    h+='.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,255,128,0.3)}'
+    h+='</style>'
+    h+=f'<div class=top>S.I.E.A. - {t}</div>'
+    botones='<a href=/ class=btn-back>🏠 INICIO</a>'
+    if role=="admin": botones+=' <a href=/admin_dashboard class=btn-admin-dash>⚙️ ADMINISTRACIÓN</a>'
+    botones+=' <a href=/logout class=btn-logout>🚪 CERRAR SESIÓN</a>'
+    h+=f'<div class=bar><div><div class=user-info>👤 {u}</div><div class=sub-bar>{f_activa}</div></div><div>{botones}</div></div>'
+    return h + b
 
+# ============== RUTAS ==============
 @app.route("/")
-def ix():
- if "user" not in session:
-  return login_page()
- u=session.get("user")
- ma=session.get("materia_actual")
- materias_db=ld_m()
- materias_usuario=materias_db.get(u,[])
- total_preg=len([p for p in ld() if p.get("usuario")==u])
- if not ma:
-  ms={}
-  for p in ld():
-   if p.get("usuario")==u:
-    ms[p["materia"]]=ms.get(p["materia"],0)+1
-  h='<div class="sec-title title-materias">ðŸ“š PANEL PRINCIPAL DE MATERIAS Y GESTION</div>'
-  h+='<div class=card card-create style="border-left:6px solid #FF9800"><b>âž• CREAR NUEVA MATERIA PERSONALIZADA</b><p style="font-size:11px;color:#FFE0B2;margin:6px 0">Asigne una nomenclatura oficial o personalizada para organizar sus reactivos</p><form method=post action=/add_materia><input class=input name=nueva_materia placeholder="ETICA, ADMINISTRATIVO, etc." required><button class="btn btn-orange">Crear Materia</button></form></div>'
-  colores=[("card-hi","btn-hi","#00FF80"),("card-mom","btn-mom","#00E5FF"),("card-ley","btn-ley","#FFD700"),("card-new","btn-gold","#C5A059")]
-  for idx,m in enumerate(materias_usuario):
-   c=ms.get(m,0)
-   card_c,btn_c,col=colores[idx % len(colores)]
-   h+=f'<div class=card {card_c}><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:900;font-size:13px">ðŸ“˜ {m}</span><span class=badge style="background:{col};color:#050905">{c} reactivos</span></div>'
-   h+=f'<form method=post action=/set_materia><input type=hidden name=materia value="{m}"><button class="btn {btn_c}">ðŸ“‚ ACCEDER A {m} - GESTIÃ“N Y REACTIVOS</button></form>'
-   h+=f'<div style="margin-top:10px;display:flex;gap:6px"><a href=/edit_materia/{idx} class=btn-edit style="flex:1;text-align:center">âœï¸ EDITAR MATERIA</a><a href=/del_materia/{idx} class=btn-del>ðŸ—‘ï¸ ELIMINAR</a></div></div>'
-  if total_preg>0:
-   h+=f'<div class=card card-gen><div style="display:flex;justify-content:space-between;align-items:center"><b>â­ EXAMEN GENERAL</b><span class=badge style="background:#FFD700;color:#050905">{total_preg} reactivos totales</span></div><p style="font-size:11px;color:#FFE0B2;margin:6px 0">EvaluaciÃ³n con todas las preguntas acumuladas</p><form method=post action=/exam_general><button class="btn btn-gold">ðŸ“ REALIZAR EXAMEN GENERAL</button></form></div>'
-  else:
-   h+=f'<div class=card card-gen-vacio><b>â­ EXAMEN GENERAL (SIN REACTIVOS)</b><p style="font-size:11px;color:#777;margin:6px 0">Agregue preguntas en las materias para habilitar</p><button class="btn btn-gold" disabled>ðŸ“ REALIZAR EXAMEN GENERAL</button></div>'
-  h+='<div class=card card-per><b>ðŸŽ¯ EXAMEN PERSONALIZADO</b><p style="font-size:11px;color:#CE93D8;margin:6px 0">Seleccione y combine las materias de su preferencia para prÃ¡ctica focalizada</p><form method=post action=/exam_personalizado>'
-  for m in materias_usuario:
-   c=ms.get(m,0)
-   h+=f'<label style="display:block;background:#0A0817;padding:9px;margin:5px 0;border-radius:7px;font-size:12px;border:1px solid #2A1F40"><input type=checkbox name=mats value="{m}" style="margin-right:8px">{m} ({c})</label>'
-  h+='<button class="btn btn-purple" style="margin-top:10px">âœ¨ GENERAR EXAMEN COMBINADO</button></form></div>'
-  return base("INICIO",h)
+def index():
+    if "user" not in session:
+        return login_page()
+    return dashboard()
 
- pr=[p for p in ld() if p["materia"]==ma and p.get("usuario")==u]
- allp=[p for p in ld() if p.get("usuario")==u]
- b='<div style="margin:12px;display:flex;gap:8px"><a href=/cambiar class=btn-inicio>ðŸ  INICIO - PANEL GENERAL</a></div>'
- b+=f'<div class="sec-title title-trabajando">ðŸ“‚ BANCO DE TRABAJO: {ma} ({len(pr)} REACTIVOS)</div>'
- b+=f'<div class=card card-create style="border-left:6px solid #00FF80"><b>âž• NUEVA PREGUNTA PARA {ma}</b><form method=post action=/add><input class=input name=p placeholder="Escriba el enunciado de la pregunta" required><div style="display:flex;gap:8px;margin:10px 0"><input class=input placeholder="OpciÃ³n A" name=o1 required><input class=input placeholder="OpciÃ³n B" name=o2 required></div><div style="display:flex;gap:8px;margin:10px 0"><input class=input placeholder="OpciÃ³n C" name=o3 required><input class=input placeholder="OpciÃ³n D" name=o4 required></div><select class=input name=c required><option>Seleccione respuesta correcta</option><option value=0>A</option><option value=1>B</option><option value=2>C</option><option value=3>D</option></select><button class="btn btn-green">âœ… GUARDAR REACTIVO</button></form></div>'
- if len(pr)==0:
-  b+=f'<div class=card style="background:#2A1111;border:1px solid #5A1A1A"><b style="color:#FF8A80">âš ï¸ Sin reactivos en {ma}</b><p style="font-size:11px;color:#BCAAA4">Utilice el formulario superior para agregar preguntas</p></div>'
- for p in allp:
-  if p["materia"]!=ma: continue
-  idx = allp.index(p)
-  letras=["A","B","C","D"]
-  correcta=letras[p["co"]]
-  b+=f'<div class=card card-preg><div style="display:flex;justify-content:space-between"><span class=badge style="background:#00FF80;color:#050905">{p["materia"]}</span><span class=badge style="background:#00E5FF;color:#050905">Respuesta correcta: {correcta}</span></div><p style="margin:10px 0;font-size:13px"><b>{p["p"]}</b></p><div style="font-size:11px;margin:8px 0"><b>A)</b> {p["op"][0]} | <b>B)</b> {p["op"][1]} | <b>C)</b> {p["op"][2]} | <b>D)</b> {p["op"][3]}</div><a href=/edit/{idx} class=btn-edit>âœï¸ EDITAR</a><a href=/del/{idx} class=btn-del>ðŸ—‘ï¸ ELIMINAR</a></div>'
- return base(ma,b)
+def dashboard():
+    u=session.get("user")
+    h='<div class="sec-title title-materias">📚 PANEL DE INICIO</div>'
+    h+='<div class=card><b>✓ Bienvenido al Sistema</b><p style="font-size:11px;margin:8px 0">Acceso a todas las herramientas de evaluación y capacitación</p>'
+    h+='<button class=btn onclick="location.href=\'/examenes\'">📝 MIS EXÁMENES</button>'
+    h+='<button class=btn onclick="location.href=\'/banco_preguntas\'">❓ BANCO DE PREGUNTAS</button>'
+    h+='<button class=btn onclick="location.href=\'/historial\'">📊 MI HISTORIAL</button>'
+    h+='</div>'
+    return base("INICIO",h)
 
-@app.route("/login",methods=["POST"])
-def lg():
- u=request.form.get("user","").strip().upper()
- p=request.form.get("pass","").strip()
- us=ld_u()
- 
- if u not in us:
-  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>âŒ Usuario no encontrado. Cree una cuenta primero.</div>'
- 
- if us[u]["password_hash"] != hash_password(p):
-  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>âŒ ContraseÃ±a incorrecta.</div>'
- 
- usuario = us[u]
- if usuario.get("status") != "aprobado":
-  return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class=error-msg>â³ Tu cuenta estÃ¡ pendiente de aprobaciÃ³n por el administrador. Contacta al soporte: +52 811 0290152</div>'
- 
- session["user"] = u
- session["role"] = usuario.get("role", "user")
- session["u"] = usuario.get("email", "")
- return redirect("/")
+@app.route("/login", methods=["POST"])
+def login():
+    u=request.form.get("user","").strip().upper()
+    p=request.form.get("pass","").strip()
+    us=ld_u()
+    
+    if u not in us:
+        return login_page('<div class=error-msg>❌ Usuario no encontrado. Regístrese primero.</div>')
+    
+    if us[u]["password_hash"] != hash_password(p):
+        return login_page('<div class=error-msg>❌ Contraseña incorrecta.</div>')
+    
+    usuario = us[u]
+    if usuario.get("status") != "aprobado":
+        return login_page(f'<div class=warning-msg>⏳ Tu cuenta está <b>PENDIENTE DE APROBACIÓN</b>. El administrador revisará tu solicitud pronto. Contacta: +52 811 0290152</div>')
+    
+    session["user"] = u
+    session["role"] = usuario.get("role", "user")
+    session["email"] = usuario.get("email", "")
+    return redirect("/")
 
-@app.route("/register", methods=["GET","POST"])
-def reg():
-    if request.method=="POST":
-        u=request.form.get("user","").strip().upper()
-        p=request.form.get("pass","").strip()
-        e=request.form.get("email","").strip()
-        if not u or not p:
-            return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class="error-msg">Faltan datos</div>'
-        adm=ld_admin()
-        if u in adm:
-            return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" class="error-msg">Usuario ya existe</div>'
-        adm[u]={"password_hash":hash_password(p),"status":"pendiente","role":"user","email":e}
-        sv_admin(adm)
-        return login_page() + '<div style="margin:20px auto;width:90%;max-width:400px" style="background:#1A3111;border:1px solid #5A1A1A"><b>Registro enviado. Espera aprobación.</b></div>'
-    return login_page()
+@app.route("/register", methods=["POST"])
+def register():
+    u=request.form.get("new_user","").strip().upper()
+    full_name=request.form.get("full_name","").strip()
+    e=request.form.get("email","").strip()
+    p=request.form.get("new_pass","").strip()
+    p_confirm=request.form.get("confirm_pass","").strip()
+    
+    if not all([u, full_name, e, p, p_confirm]):
+        return login_page('<div class=error-msg>❌ Faltan datos en el formulario.</div>')
+    
+    if p != p_confirm:
+        return login_page('<div class=error-msg>❌ Las contraseñas no coinciden.</div>')
+    
+    if len(p) < 8:
+        return login_page('<div class=error-msg>❌ La contraseña debe tener al menos 8 caracteres.</div>')
+    
+    us = ld_u()
+    pendientes = ld_pendientes()
+    
+    if u in us or u in pendientes:
+        return login_page('<div class=error-msg>❌ Este usuario ya existe.</div>')
+    
+    # Guardar en pendientes
+    pendientes[u]={
+        "full_name":full_name,
+        "email":e,
+        "password_hash":hash_password(p),
+        "status":"pendiente",
+        "role":"user",
+        "created_at":dt.now().strftime("%d/%m/%Y %H:%M")
+    }
+    sv_pendientes(pendientes)
+    
+    return login_page('<div class=success-msg>✓ ¡Registro enviado! Tu solicitud será revisada por el administrador en breve. Recibirás un correo de confirmación.</div>')
+
+@app.route("/admin_login", methods=["POST"])
+def admin_login():
+    admin_pass = request.form.get("admin_pass", "").strip()
+    # Contraseña: Admin123 (hasheada)
+    admin_hash = hash_password("Admin123")
+    
+    if hash_password(admin_pass) != admin_hash:
+        return login_page('<div class=error-msg>❌ Contraseña de administrador incorrecta.</div>')
+    
+    session["user"] = "ADMIN"
+    session["role"] = "admin"
+    session["email"] = "admin@siea.com"
+    return redirect("/admin_dashboard")
+
+@app.route("/admin_dashboard")
+@require_login
+@require_admin
+def admin_dashboard():
+    pendientes = ld_pendientes()
+    us = ld_u()
+    
+    h='<div class="sec-title title-materias">⚙️ PANEL DE ADMINISTRACIÓN</div>'
+    h+='<div class=card><b>📋 Usuarios Pendientes de Aprobación</b>'
+    
+    if not pendientes:
+        h+='<p style="font-size:11px;color:#8AB38A;margin:8px 0">No hay usuarios pendientes</p>'
+    else:
+        for user_id, datos in pendientes.items():
+            h+=f'''<div style="background:#0D260D;padding:10px;margin:8px 0;border-radius:8px;border-left:4px solid #00FF80">
+            <p style="font-size:11px;margin:4px 0"><b>{user_id}</b> - {datos.get('full_name','')}</p>
+            <p style="font-size:10px;color:#8AB38A;margin:4px 0">{datos.get('email','')}</p>
+            <form method=post action=/aprobar_usuario style="display:inline">
+                <input type=hidden name=user value="{user_id}">
+                <button class="btn" style="width:auto;padding:6px 12px;margin:4px 0">✓ APROBAR</button>
+            </form>
+            <form method=post action=/rechazar_usuario style="display:inline">
+                <input type=hidden name=user value="{user_id}">
+                <button class="btn" style="width:auto;padding:6px 12px;margin:4px 0;background:#4D1A1A">✗ RECHAZAR</button>
+            </form>
+            </div>'''
+    
+    h+='</div>'
+    
+    h+='<div class=card><b>👥 Usuarios Activos</b>'
+    h+=f'<p style="font-size:11px;margin:8px 0">Total: {len(us)} usuarios registrados</p>'
+    h+='</div>'
+    
+    return base("ADMINISTRACIÓN",h)
+
+@app.route("/aprobar_usuario", methods=["POST"])
+@require_login
+@require_admin
+def aprobar_usuario():
+    user_id = request.form.get("user", "").strip().upper()
+    pendientes = ld_pendientes()
+    us = ld_u()
+    
+    if user_id not in pendientes:
+        return redirect("/admin_dashboard")
+    
+    # Mover a usuarios aprobados
+    datos = pendientes[user_id]
+    datos["status"] = "aprobado"
+    us[user_id] = datos
+    
+    del pendientes[user_id]
+    sv_pendientes(pendientes)
+    sv_u(us)
+    
+    return redirect("/admin_dashboard")
+
+@app.route("/rechazar_usuario", methods=["POST"])
+@require_login
+@require_admin
+def rechazar_usuario():
+    user_id = request.form.get("user", "").strip().upper()
+    pendientes = ld_pendientes()
+    
+    if user_id in pendientes:
+        del pendientes[user_id]
+        sv_pendientes(pendientes)
+    
+    return redirect("/admin_dashboard")
+
+@app.route("/examenes")
+@require_login
+def examenes():
+    h='<div class="sec-title title-materias">📝 MIS EXÁMENES</div>'
+    h+='<div class=card><b>Examen General</b><p style="font-size:11px;margin:8px 0">Todas las materias juntas</p><button class=btn>INICIAR EXAMEN</button></div>'
+    h+='<div class=card><b>Examen Personalizado</b><p style="font-size:11px;margin:8px 0">Selecciona materias específicas</p><button class=btn>CREAR EXAMEN</button></div>'
+    return base("EXÁMENES",h)
+
+@app.route("/banco_preguntas")
+@require_login
+def banco_preguntas():
+    preguntas = ld()
+    u = session.get("user")
+    mis_preg = [p for p in preguntas if p.get("usuario")==u]
+    
+    h='<div class="sec-title title-materias">❓ BANCO DE PREGUNTAS</div>'
+    h+='<div class=card><b>➕ NUEVA PREGUNTA</b><form method=post action=/add_pregunta>'
+    h+='<textarea name=pregunta placeholder="Escriba la pregunta" style="width:100%;padding:10px;border-radius:8px;border:1px solid #1A401A" required></textarea>'
+    h+='<input name=op_a placeholder="Opción A" class=inp required>'
+    h+='<input name=op_b placeholder="Opción B" class=inp required>'
+    h+='<input name=op_c placeholder="Opción C" class=inp required>'
+    h+='<input name=op_d placeholder="Opción D" class=inp required>'
+    h+='<select name=correcta class=inp required><option>Selecciona respuesta correcta</option><option>A</option><option>B</option><option>C</option><option>D</option></select>'
+    h+='<button class=btn>✓ GUARDAR PREGUNTA</button></form></div>'
+    
+    h+=f'<div class=card><b>Mis preguntas ({len(mis_preg)})</b>'
+    if not mis_preg:
+        h+='<p style="font-size:11px;color:#8AB38A">No hay preguntas aún</p>'
+    else:
+        for i,p in enumerate(mis_preg):
+            h+=f'<div style="background:#0D1A0D;padding:10px;margin:8px 0;border-radius:8px"><p style="font-size:11px">{p.get("pregunta","")}</p></div>'
+    h+='</div>'
+    
+    return base("BANCO DE PREGUNTAS",h)
+
+@app.route("/add_pregunta", methods=["POST"])
+@require_login
+def add_pregunta():
+    u = session.get("user")
+    pregunta = request.form.get("pregunta", "").strip()
+    opciones = [request.form.get(f"op_{x}", "").strip() for x in ['a','b','c','d']]
+    correcta = request.form.get("correcta", "").strip().upper()
+    
+    if not all([pregunta, all(opciones), correcta in ['A','B','C','D']]):
+        return redirect("/banco_preguntas")
+    
+    preguntas = ld()
+    preguntas.append({
+        "id": str(uuid.uuid4()),
+        "usuario": u,
+        "pregunta": pregunta,
+        "opciones": {x: opciones[i] for i,x in enumerate(['A','B','C','D'])},
+        "correcta": correcta,
+        "created_at": dt.now().strftime("%d/%m/%Y %H:%M")
+    })
+    sv(preguntas)
+    
+    return redirect("/banco_preguntas")
+
+@app.route("/historial")
+@require_login
+def historial():
+    h='<div class="sec-title title-materias">📊 MI HISTORIAL</div>'
+    h+='<div class=card><b>Exámenes Realizados</b><p style="font-size:11px;margin:8px 0">Aquí aparecerán tus resultados</p></div>'
+    return base("HISTORIAL",h)
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
-@app.route("/")
-def home():
-    if "user" not in session:
-        return redirect("/login")
-    return ixt()
-
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-
-
-
-
-
-
-           
+    port = int(os.environ.get("PORT", 5002))
+    app.run(host='0.0.0.0', port=port, debug=False)
