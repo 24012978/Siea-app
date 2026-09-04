@@ -73,6 +73,7 @@ def questions_for_user():
     return [q for q in load(DB, []) if q.get("usuario") == session.get("user")]
 
 
+# ============== RUTAS ==============
 @app.route("/")
 def home():
     if not session.get("user"):
